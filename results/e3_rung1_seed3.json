@@ -1,0 +1,16 @@
+{
+  "seed": 3,
+  "rung": "1 (two-bus, 4-D state)",
+  "condition": "4b",
+  "equilibrium_residual": 2.9802322387695312e-08,
+  "gate_passed": true,
+  "certified_rho": 1.2,
+  "certified_detail": {
+    "rho": 1.2,
+    "certified_lower_bound_F": 0.0,
+    "audit_min_F": 0.3443,
+    "subdomains": 7,
+    "seconds": 1.24
+  },
+  "note": "gate passed, pipeline certifies a real region on the two-bus system"
+}

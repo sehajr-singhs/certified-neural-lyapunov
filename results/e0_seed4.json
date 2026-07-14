@@ -1,0 +1,14 @@
+{
+  "seed": 4,
+  "iters": 4000,
+  "train_seconds": 63.3,
+  "equilibrium_residual": 1.0721774970079423e-06,
+  "frac_lie_le_0_large_region": 0.9998000264167786,
+  "frac_V_gt_Vstar_large_region": 0.9998000264167786,
+  "frac_lie_le_0_small_region": 0.9994000196456909,
+  "region": {
+    "delta_std": 2.0,
+    "omega_std": 10.0
+  },
+  "final_loss": -0.012477661482989788
+}

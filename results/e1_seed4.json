@@ -1,0 +1,12 @@
+{
+  "seed": 4,
+  "region": {
+    "delta_r": 2.0,
+    "omega_r": 10.0
+  },
+  "random_violation_rate": 1.4999999621068127e-05,
+  "random_max_lie": 27.054428100585938,
+  "pgd_violation_rate": 0.08749999850988388,
+  "pgd_max_lie": 202.4791259765625,
+  "attack_over_random_ratio": 5833.333381354655
+}

@@ -1,0 +1,67 @@
+{
+  "seed": 3,
+  "condition": "4b + prop2",
+  "rung2": {
+    "as_trained_far_region": {
+      "region": {
+        "gen": 5,
+        "delta_offset": [
+          0.1,
+          0.5
+        ],
+        "omega_offset": [
+          0.1,
+          0.5
+        ]
+      },
+      "verdict": "violation",
+      "F_at_ce": -3.3422658443450928,
+      "lie_at_ce": 3.3422658443450928,
+      "counterexample_gen5": {
+        "delta": 0.9089,
+        "omega": 0.1
+      },
+      "subdomains": 14,
+      "seconds": 5.58,
+      "method": "CROWN"
+    },
+    "bound_ladder_pm0p5_box": {
+      "IBP": -99.8403549194336,
+      "CROWN": -92.01628112792969,
+      "CROWN-Optimized": -43.21718978881836
+    },
+    "cegis_4b_annulus": {
+      "certified_rho": 1.5,
+      "detail": {
+        "rho": 1.5,
+        "certified_lower_bound_F": 0.0,
+        "audit_min_F": 2.1576,
+        "subdomains": 14
+      }
+    },
+    "cegis_prop2_beta_max": 3.9688
+  },
+  "rung3_full20D": {
+    "eps": 0.05,
+    "certified_r_max": 0.0,
+    "certified_detail": null,
+    "first_failure": {
+      "r": 0.01,
+      "verdict": "violation",
+      "reason": null,
+      "F_at_ce": -1.7588775157928467,
+      "subdomains": 387,
+      "seconds": 47.26
+    }
+  },
+  "rung4_full20D_scale": {
+    "r": 0.5,
+    "eps": 0.05,
+    "verdict": "violation",
+    "reason": null,
+    "certified": false,
+    "subdomains": 377,
+    "seconds": 66.8,
+    "F_at_ce": -48.03005599975586
+  }
+}

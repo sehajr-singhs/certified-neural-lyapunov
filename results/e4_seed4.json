@@ -1,0 +1,90 @@
+{
+  "seed": 4,
+  "condition": "4b",
+  "gen": 5,
+  "inner_offset": 0.05,
+  "region": "gen-5 slice box [x*+INNER, x*+INNER+rho]^2 in (delta,omega)",
+  "baseline_certified_rho": 0.0,
+  "final_certified_rho": 1.5,
+  "iterations": [
+    {
+      "iter": 0,
+      "certified_rho": 0.0,
+      "certified_area": 0.0,
+      "frontier_counterexamples": 512,
+      "frontier_max_lie": 1.3373,
+      "certified_detail": null,
+      "iter_seconds": 5.5
+    },
+    {
+      "iter": 1,
+      "certified_rho": 1.5,
+      "certified_area": 2.25,
+      "frontier_counterexamples": 0,
+      "frontier_max_lie": -2.8906,
+      "certified_detail": {
+        "rho": 1.5,
+        "certified_lower_bound_F": 0.0,
+        "audit_min_F": 2.8906,
+        "subdomains": 11
+      },
+      "iter_seconds": 53.9
+    },
+    {
+      "iter": 2,
+      "certified_rho": 1.5,
+      "certified_area": 2.25,
+      "frontier_counterexamples": 0,
+      "frontier_max_lie": -2.8906,
+      "certified_detail": {
+        "rho": 1.5,
+        "certified_lower_bound_F": 0.0,
+        "audit_min_F": 2.8906,
+        "subdomains": 11
+      },
+      "iter_seconds": 47.2
+    },
+    {
+      "iter": 3,
+      "certified_rho": 1.5,
+      "certified_area": 2.25,
+      "frontier_counterexamples": 0,
+      "frontier_max_lie": -2.8906,
+      "certified_detail": {
+        "rho": 1.5,
+        "certified_lower_bound_F": 0.0,
+        "audit_min_F": 2.8906,
+        "subdomains": 11
+      },
+      "iter_seconds": 44.3
+    },
+    {
+      "iter": 4,
+      "certified_rho": 1.5,
+      "certified_area": 2.25,
+      "frontier_counterexamples": 0,
+      "frontier_max_lie": -2.8906,
+      "certified_detail": {
+        "rho": 1.5,
+        "certified_lower_bound_F": 0.0,
+        "audit_min_F": 2.8906,
+        "subdomains": 11
+      },
+      "iter_seconds": 57.6
+    },
+    {
+      "iter": 5,
+      "certified_rho": 1.5,
+      "certified_area": 2.25,
+      "frontier_counterexamples": 0,
+      "frontier_max_lie": -2.8906,
+      "certified_detail": {
+        "rho": 1.5,
+        "certified_lower_bound_F": 0.0,
+        "audit_min_F": 2.8906,
+        "subdomains": 11
+      },
+      "iter_seconds": 63.0
+    }
+  ]
+}

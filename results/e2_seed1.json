@@ -1,0 +1,45 @@
+{
+  "seed": 1,
+  "condition": "4a",
+  "region": "gen-5 slice annulus, inner offset 0.05",
+  "as_trained": {
+    "certified_rho": 0.0,
+    "certified_detail": null,
+    "full_annulus_verdict": "violation",
+    "full_annulus_certified_lb": null,
+    "full_annulus_F_at_ce": -0.02550029754638672,
+    "full_annulus_subdomains": 93,
+    "dense_min_F": -0.02557,
+    "dense_frac_below_0": 0.04274
+  },
+  "cegis": {
+    "certified_rho": 1.5,
+    "certified_detail": {
+      "rho": 1.5,
+      "certified_lower_bound_F": 0.0,
+      "audit_min_F": 0.0855,
+      "subdomains": 12
+    },
+    "full_annulus_verdict": "verified",
+    "full_annulus_certified_lb": 0.0,
+    "full_annulus_F_at_ce": null,
+    "full_annulus_subdomains": 12,
+    "dense_min_F": 0.08552,
+    "dense_frac_below_0": 0.0
+  },
+  "bound_ladder_gen5_box": {
+    "IBP": {
+      "lower_bound": -2.953469753265381,
+      "seconds": 0.01
+    },
+    "CROWN": {
+      "lower_bound": -0.4824790954589844,
+      "seconds": 0.027
+    },
+    "CROWN-Optimized": {
+      "lower_bound": -0.4824790954589844,
+      "seconds": 1.188
+    }
+  },
+  "crown_opt_over_ibp_tightness": 6.121
+}
