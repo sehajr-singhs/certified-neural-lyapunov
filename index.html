@@ -159,7 +159,15 @@ Simulation only, CPU wall-clock.</p>
   <tr><td>E3 bound ladder (IBP / CROWN / CROWN-Opt) on \(\pm0.5\) box</td><td>-129.5 / -132.2 / -54.8</td></tr>
   <tr><td>E3 full 20-D: certified radius</td><td>0 (genuine violation at \(r=0.01\))</td></tr>
   <tr><td>E4 CEGIS: certifiable \(\rho\), iteration 0 to 1</td><td class="win">0.0 to 1.5</td></tr>
+  <tr><td>Verifier cross-check: analytic vs JacobianOP soundness contradictions</td><td class="win">0 of 24 boxes</td></tr>
+  <tr><td>Re-certification: \(\rho\) (4b) under droop vs learned RNN controller</td><td class="win">2.0 vs 2.0</td></tr>
 </table>
+<p class="note">Robustness over five seeds: E4 certified \(\rho\) 1.5, Prop-2
+\(\beta\) 3.97, and the two-bus gate \(\rho\) 1.2 are identical across all five, and
+the directed-attack violation rate is \(0.079 \pm 0.019\) against a random rate of
+essentially zero. The whole certification is cross-checked against auto_LiRPA's
+JacobianOP path, the route Prof. Cui named, with zero soundness contradictions, so
+the specialized verifier is validated rather than merely trusted.</p>
 
 <h2>Limitations</h2>
 <p>The certificate holds over the stated region and nowhere else. The model is the Kron-reduced lossy
