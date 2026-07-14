@@ -51,10 +51,17 @@ def _search_counterexample(cond, xL, xU, eps, iters=200, restarts=8, seed=0):
 
 def certify_box(cond, xL, xU, eps=0.0, method="CROWN-Optimized",
                 min_width=1e-2, max_subdomains=20000, time_budget=120.0,
-                example_input=None, seed=0):
-    """Branch-and-bound. Returns a dict with the verdict and statistics."""
+                example_input=None, seed=0, eval_cond=None):
+    """Branch-and-bound. Returns a dict with the verdict and statistics.
+
+    `cond` supplies the CROWN bounds. `eval_cond` supplies the true function value
+    for the counterexample search; it defaults to `cond`, but when `cond` is a
+    JacobianOP graph (whose eager forward is zero, since the gradient is only
+    materialized during bounding) the caller passes the analytic condition as
+    `eval_cond` so counterexamples are searched on the real function."""
     if example_input is None:
         example_input = ((xL + xU) / 2)
+    ec = eval_cond if eval_cond is not None else cond
     bm = BoundedModule(cond, example_input, verbose=False)
 
     t0 = time.time()
@@ -77,7 +84,7 @@ def certify_box(cond, xL, xU, eps=0.0, method="CROWN-Optimized",
         out_of_budget = n_sub > max_subdomains or (time.time() - t0) > time_budget
         if widths.max().item() < min_width or out_of_budget:
             # cannot refine further: look for a genuine counterexample inside
-            found, xce, Fce = _search_counterexample(cond, bL, bU, eps, seed=seed)
+            found, xce, Fce = _search_counterexample(ec, bL, bU, eps, seed=seed)
             if found:
                 return dict(verdict="violation", certified=False,
                             counterexample=xce.numpy().ravel().tolist(), F_at_ce=Fce,

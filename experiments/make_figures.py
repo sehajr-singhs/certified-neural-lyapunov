@@ -102,22 +102,27 @@ def fig_money(s, xstar):
 
 
 def fig_cegis(s):
-    e4 = jload("e4_seed0.json")
-    if not e4:
+    # aggregate across every available seed for mean +/- std error bars
+    runs = [jload(f"e4_seed{k}.json") for k in range(8)]
+    runs = [r for r in runs if r]
+    if not runs:
         return
-    it = e4["iterations"]
-    x = [r["iter"] for r in it]
-    rho = [r["certified_rho"] for r in it]
-    mlie = [r["frontier_max_lie"] for r in it]
+    nit = min(len(r["iterations"]) for r in runs)
+    x = list(range(nit))
+    rho = np.array([[r["iterations"][i]["certified_rho"] for i in x] for r in runs])
+    mlie = np.array([[r["iterations"][i]["frontier_max_lie"] for i in x] for r in runs])
     fig, ax1 = plt.subplots(figsize=(7, 4.3))
-    ax1.plot(x, rho, "o-", color="green", lw=2, label="certified $\\rho$ (4b)")
-    ax1.set_xlabel("CEGIS iteration"); ax1.set_ylabel("certified region $\\rho$", color="green")
-    ax1.set_ylim(-0.1, max(rho) + 0.3)
+    ax1.errorbar(x, rho.mean(0), yerr=rho.std(0), fmt="o-", color="green", lw=2,
+                 capsize=4, label="certified $\\rho$ (4b)")
+    ax1.set_xlabel("CEGIS iteration")
+    ax1.set_ylabel("certified region $\\rho$", color="green")
+    ax1.set_ylim(-0.1, rho.max() + 0.3)
     ax2 = ax1.twinx()
-    ax2.plot(x, mlie, "s--", color="crimson", lw=1.6, label="max attack Lie")
+    ax2.errorbar(x, mlie.mean(0), yerr=mlie.std(0), fmt="s--", color="crimson",
+                 lw=1.6, capsize=3, label="max attack Lie")
     ax2.axhline(0, color="crimson", lw=0.8, alpha=0.5)
     ax2.set_ylabel("max attack Lie (>0 = violation)", color="crimson")
-    ax1.set_title("Closing the loop: certified region jumps once counterexamples are fed back")
+    ax1.set_title("Closing the loop over %d seeds: certified region jumps at iteration 1" % len(runs))
     save(fig, "cegis_curve.png")
 
 

@@ -153,3 +153,33 @@ at radius 0.01 (a real counterexample, Lie = +4.52), because CEGIS was scoped to
 the gen-5 slice and off-slice behavior is unconstrained, so retraining on the
 slice can worsen it elsewhere. Reported as a genuine violation, not incompleteness.
 Full-state CEGIS / certified training is the clear next step.
+
+## Verifier cross-check (Task 1): analytic vs JacobianOP, they AGREE
+
+Built a second, independent certification path (src/graphs_jacobian.py) that forms
+the Lie derivative through auto_LiRPA's JacobianOP, which expands the gradient nodes
+itself and shares nothing with the analytic gradient of src/graphs.py. auto_LiRPA
+expands the JacobianOP node through the relu/exp ELU graph fine. Cross-check on seed
+0 (results/verifier_crosscheck_seed0.json):
+  - Soundness scan, 24 boxes: both paths bound the same F, so a sound lb from one
+    must never exceed a sound ub from the other. Contradictions = 0, worst gap 0.0.
+    This is the check a PGD audit cannot do, because an unsound verifier certifies
+    false properties and PGD failing to find a CE is what that looks like inside.
+  - Prop-2 beta: analytic 3.9375, JacobianOP 3.9375 (identical).
+  - E5 far region: both return "violation".
+  - Certified rho (4b): analytic 2.0 vs JacobianOP 1.25. The analytic path is
+    tighter (lb -32.5 vs -125.0 on the fixed box), so it certifies a larger region.
+    Looser JacobianOP certifying a smaller region is expected, not a disagreement,
+    and the soundness scan rules out the analytic path certifying anything false.
+Conclusion: the hand-rolled analytic path is validated as sound AND tighter, so it
+stays as the specialized implementation with JacobianOP as the standard cross-check.
+JacobianOP eager forward returns zeros (symbolic placeholder), so counterexample
+search always uses the analytic function via certify_box(eval_cond=...).
+
+## dReal (Task 2) does not build on Windows
+
+pip has only an sdist for dreal (dreal-4.20.4.1.tar.gz), no Windows wheel, and the
+source build needs Bazel + IBEX which do not build on Windows, same class of dead
+end as the IBM CROWN repo. The dReal baseline encoding is provided runnable on
+Colab/Linux (Colab is Linux, `pip install dreal` works there). Numbers to be
+produced on Colab.

@@ -1,0 +1,31 @@
+{
+  "seed": 0,
+  "note": "analytic (hand-derived gradient) vs JacobianOP (auto_LiRPA), CROWN bounds",
+  "rung2_4b_rho": {
+    "analytic": 2.0,
+    "jacobian": 1.25,
+    "analytic_s": 14.5,
+    "jacobian_s": 60.0
+  },
+  "rung2_prop2_beta": {
+    "analytic": 3.9375,
+    "jacobian": 3.9375
+  },
+  "soundness_scan": {
+    "n_boxes": 24,
+    "contradictions": 0,
+    "worst_gap": 0.0,
+    "worst_case": null
+  },
+  "tightness_lb": {
+    "ibp": -131.9717,
+    "analytic_crown": -32.4907,
+    "jacobian_crown": -124.9749
+  },
+  "e5_far_region": {
+    "analytic_verdict": "violation",
+    "jacobian_verdict": "violation"
+  },
+  "agreement": true,
+  "disagreements": []
+}

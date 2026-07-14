@@ -193,6 +193,43 @@ certified sublevel set: we bisect on $\rho$ for the largest
 $\{x: V(x)\le\rho\}\cap B$ that verifies, which is forward invariant and is a
 certified inner approximation of the region of attraction.
 
+\subsection{Soundness by independent cross-check}
+The whole contribution is soundness, so resting it on one hand-written verifier is
+a liability, and the independent PGD audit above cannot catch the failure that
+matters, because an unsound verifier certifies false properties and a PGD attack
+failing to find a counterexample is exactly what an unsound certificate looks like
+from the inside. So we cross-check the bounds against a second, independent path
+that builds the same Lie derivative through auto\_LiRPA's JacobianOP, which expands
+the gradient nodes itself rather than taking our analytic gradient, sharing nothing
+with the first path on the gradient side. Since both paths bound the same scalar
+$F$, a sound lower bound from one must never exceed a sound upper bound from the
+other, and on $24$ boxes spanning the gen-5 region that never happens, with a worst
+crossing of $0.0$ (Table~\ref{tab:crosscheck}). The two paths certify the same
+Proposition-2 rate to the bisection tolerance, and both reject the known-false far
+region as a violation. The analytic path is the tighter of the two, certifying
+$\rho=2.0$ where JacobianOP reaches $1.25$ and giving a lower bound of $-32.5$ where
+JacobianOP gives $-125.0$ on the fixed box, so the specialized implementation is a
+strength that agrees with the general-purpose route rather than a deviation from it.
+
+\begin{table}[t]
+\caption{Verifier cross-check, seed 0, gen-5 slice. Two independent gradient paths,
+same CROWN bounds. No box has $\mathrm{lb}$ from one path above $\mathrm{ub}$ from
+the other, which is the soundness condition.}
+\label{tab:crosscheck}
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+Quantity & analytic gradient & JacobianOP \\
+\midrule
+certified $\rho$ (4b)        & $2.0$   & $1.25$ \\
+Prop-2 $\beta$               & $3.94$  & $3.94$ \\
+far-region verdict          & violation & violation \\
+CROWN lower bound, fixed box & $-32.5$ & $-125.0$ \\
+soundness contradictions (24 boxes) & \multicolumn{2}{c}{$0$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Counterexample-Guided Certification}
 The as-trained network fails, so we close the loop. Her own Algorithm 1 already
 collects violating samples by random search, so she has half of this idea; the
@@ -237,6 +274,25 @@ $200{,}000$ draws, a directed attack finds them at $6.1\%$. Sampling statistics
 do not certify.}
 \label{fig:gap}
 \end{figure}
+
+\begin{table}[t]
+\caption{Robustness over five seeds, mean $\pm$ standard deviation. The result is
+not a single lucky run. Quantities with no spread are identical across seeds.}
+\label{tab:seeds}
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+Quantity & mean $\pm$ std \\
+\midrule
+E0 sampled decrease-satisfaction   & $0.9998 \pm 8\!\times\!10^{-5}$ \\
+E1 random violation rate           & $4\!\times\!10^{-6} \pm 6\!\times\!10^{-6}$ \\
+E1 directed (PGD) violation rate   & $0.079 \pm 0.019$ \\
+E4 CEGIS certified $\rho$ (4b)     & $1.5$ \\
+Prop-2 certified $\beta$           & $3.97$ \\
+Rung-1 two-bus certified $\rho$    & $1.2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{The certification staircase}
 Branch-and-bound cost grows with input dimension, so we report a staircase rather
@@ -315,6 +371,10 @@ flow, and it omits the explicit damping term, which the controller supplies. The
 equilibrium is fixed during training and verification, so a certificate that is
 used to assert stability rather than to regularize would have to account for how
 the equilibrium moves under load or parameter change, and this one does not.
+The certified closed loop uses the saturated linear droop law that she trains the
+Lyapunov function against, so her Algorithm 2 stacked-ReLU RNN controller is not
+reproduced here and the certificate is for the droop loop rather than for her
+learned controller, and extending the certificate to the RNN loop is open.
 Verification cost grows with state dimension, and the counterexample-guided
 training here was scoped to the projected slice, so the full 20-D result is a
 genuine violation rather than a certified region, which is the honest boundary of
