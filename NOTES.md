@@ -183,3 +183,25 @@ source build needs Bazel + IBEX which do not build on Windows, same class of dea
 end as the IBM CROWN repo. The dReal baseline encoding is provided runnable on
 Colab/Linux (Colab is Linux, `pip install dreal` works there). Numbers to be
 produced on Colab.
+
+## Algorithm 2 (Task 3): controller reproduced, fault numbers not, certificate extends
+
+Reproduced her decentralized monotone stacked-ReLU controller and trained it on a
+differentiable rollout with her Lyapunov regularizer relu(Lie + beta(V-V*)). Honest
+outcome (results/e6_seed0.json):
+  - Cost on a fixed eval set: droop 0.695, RNN-no-Lyap 0.715, RNN-Lyap 0.943. Near
+    the equilibrium linear droop is close to LQR-optimal, so the learned controller
+    matches it (no-Lyap) or trades cost for stability (Lyap). Her 19% reduction NOT
+    reproduced. Suspected reason: 19% comes from the large-excursion post-fault fault
+    (lines 1-39 and 2-3 tripped at t=6s), and the shipped data is pre-fault Kron only,
+    so we cannot re-derive the post-fault reduced network and modeled the disturbance
+    as an initial perturbation, where droop is already near-optimal.
+  - Transient: both controllers hold at moderate kicks and both lose sync at a large
+    kick (2.5), so the selective gen-9 desync is NOT reproduced, same missing-data
+    reason. Reported straight.
+  - Re-certification (the point): CEGIS V certifies (4b) to rho=2.0 with the learned
+    RNN controller in the closed loop, same as droop. The certificate extends to her
+    learned controller, not only the droop law used to train V. This is the result
+    that answers her question for the learned policy.
+Fixed a real bug first: the three controllers were being compared on different
+disturbance batches (shared advancing generator); now a fixed eval set.

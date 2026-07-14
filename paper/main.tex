@@ -364,6 +364,31 @@ step, and the maximum attack Lie derivative drops below zero and stays there.}
 \label{fig:cegis}
 \end{figure}
 
+\subsection{Certifying the learned controller}
+The certificate so far is for the linear droop loop she trains the Lyapunov
+function against, so we reproduce her Algorithm 2, the decentralized monotone
+stacked-ReLU controller, and re-run the certification with it in the loop, because
+certifying the learned controller is what certifying her method means. We train the
+controller on a differentiable rollout of the swing dynamics with her Lyapunov
+regularizer $\mathrm{relu}(\Lie + \beta(V-\Vstar))$, and we report honestly what
+the shipped data supports. Her headline $19\%$ cost reduction and her gen-9 loss of
+synchronism are tied to a trip of lines 1-39 and 2-3, but the shipped data is the
+pre-fault Kron-reduced model only, so we cannot re-derive her post-fault network and
+we model the disturbance as an initial perturbation instead. In that near-equilibrium
+regime linear droop is already close to the LQR-optimal law, so the learned
+controller without the regularizer matches it, $0.715$ against $0.695$, and with the
+regularizer trades cost for the stability constraint, $0.943$, and neither beats
+droop, which is the honest consequence of not having the fault scenario where a
+saturating nonlinear controller has room. We do not reproduce the $19\%$ number and
+we say so.
+
+What does carry over is the certificate. The CEGIS Lyapunov function certifies (4b)
+to $\rho=2.0$ with the learned RNN controller in the closed loop, the same certified
+region as under droop, so the certificate is not special to the linear controller,
+it extends to her learned one. This is the result that matters for her question,
+because it says the sublevel set is forward invariant under the actual learned
+policy, not only under the droop law used to train $V$.
+
 \subsection{SMT baseline}
 The comparison a reviewer expects is against SMT, since Chang, Roohi, and Gao is
 Cui's reference and her paper dismisses SMT as tractable only for small systems. We
@@ -384,11 +409,11 @@ flow, and it omits the explicit damping term, which the controller supplies. The
 equilibrium is fixed during training and verification, so a certificate that is
 used to assert stability rather than to regularize would have to account for how
 the equilibrium moves under load or parameter change, and this one does not.
-The certified closed loop uses the saturated linear droop law that she trains the
-Lyapunov function against, so her Algorithm 2 stacked-ReLU RNN controller is not
-reproduced here and the certificate is for the droop loop rather than for her
-learned controller, and extending the certificate to the RNN loop is open.
-Verification cost grows with state dimension, and the counterexample-guided
+Her Algorithm 2 controller is reproduced and the certificate extends to it, but her
+$19\%$ cost reduction and gen-9 desynchronization are not reproduced, because they
+depend on a post-fault network the shipped pre-fault Kron-reduced data does not
+contain, so those numbers are hers and not ours. Verification cost grows with state
+dimension, and the counterexample-guided
 training here was scoped to the projected slice, so the full 20-D result is a
 genuine violation rather than a certified region, which is the honest boundary of
 the method as it stands. Everything is simulation, with no hardware.

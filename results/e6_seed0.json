@@ -1,0 +1,26 @@
+{
+  "seed": 0,
+  "fidelity_note": "disturbance modeled as initial perturbation; post-fault Kron data not shipped",
+  "cost": {
+    "linear_droop": 0.69546,
+    "rnn_lyapunov": 0.94325,
+    "rnn_no_lyapunov": 0.71513,
+    "rnn_lyap_reduction_pct": -35.6
+  },
+  "transient_kick_gen9": {
+    "rnn_lyapunov": {
+      "final_max_abs_omega": 5.7485,
+      "peak_abs_omega": 5.9935,
+      "synchronism": "lost"
+    },
+    "rnn_no_lyapunov": {
+      "final_max_abs_omega": 5.6585,
+      "peak_abs_omega": 5.9899,
+      "synchronism": "lost"
+    }
+  },
+  "certified_rho_4b": {
+    "droop_loop": 2.0,
+    "rnn_lyapunov_loop": 2.0
+  }
+}
