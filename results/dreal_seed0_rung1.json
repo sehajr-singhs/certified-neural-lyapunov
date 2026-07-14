@@ -1,0 +1,10 @@
+{
+  "seed": 0,
+  "rung": 1,
+  "condition": "4b",
+  "solver": "dReal",
+  "delta": 0.001,
+  "time_budget_s": 600,
+  "result": "dreal_unavailable",
+  "note": "dReal has no Windows wheel and its source build needs Bazel+IBEX; run this on Colab or Linux. No number fabricated."
+}

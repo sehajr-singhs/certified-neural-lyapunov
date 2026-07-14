@@ -364,6 +364,19 @@ step, and the maximum attack Lie derivative drops below zero and stays there.}
 \label{fig:cegis}
 \end{figure}
 
+\subsection{SMT baseline}
+The comparison a reviewer expects is against SMT, since Chang, Roohi, and Gao is
+Cui's reference and her paper dismisses SMT as tractable only for small systems. We
+encode the identical condition (4b), the same trained network through the same
+relu/exp ELU identity, for dReal, and check the negation, whether any state in the
+region has a nonnegative Lie derivative. dReal ships no Windows wheel and its source
+build needs Bazel and IBEX, so it does not run on the Windows host this work was
+developed on, the same environment wall the IBM CROWN repository hit, and the
+encoding is provided to run on Linux where the expected outcome from the SMT
+scalability literature is that the 4-D two-bus gate closes and the NE39 slice
+exceeds its budget while CROWN certifies it in seconds. We report the encoding here
+and do not report a dReal wall-clock we did not measure.
+
 \section{Limitations}
 The certificate holds over the stated region and nowhere else. The model is the
 Kron-reduced lossy swing model that the authors train against, not full AC power
