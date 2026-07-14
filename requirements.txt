@@ -4,13 +4,15 @@
 numpy==2.3.5
 scipy==1.16.3
 matplotlib==3.10.6
-torch==2.13.0            # installed from https://download.pytorch.org/whl/cpu
+torch==2.11.0            # cpu build; auto_LiRPA 0.7.2 pins this, do not bump
 
 # Verifier stack: install from GitHub main, NOT PyPI.
-# PyPI auto_LiRPA is stuck at 0.3 and lacks JacobianOP + GenBaB (sin/cos/ELU
-# branching) which this project depends on. See NOTES.md.
-#   pip install git+https://github.com/Verified-Intelligence/auto_LiRPA.git
-#   git clone https://github.com/Verified-Intelligence/alpha-beta-CROWN.git
-# The exact commit hashes that verified here are recorded in NOTES.md once pinned.
+# PyPI auto_LiRPA is stuck at 0.3 and lacks JacobianOP + the sin/cos bound ops this
+# project depends on. Install from source (resolves to version 0.7.2):
+#   pip install --ignore-requires-python \
+#       git+https://github.com/Verified-Intelligence/auto_LiRPA.git
+# The --ignore-requires-python is needed because 0.7.2 pins python ~=3.11 but runs
+# fine on 3.13 (verified). auto_LiRPA has no BoundElu, so src/lyapunov.py expresses
+# ELU via relu/exp so CROWN can bound it. See NOTES.md.
 
 # Set KMP_DUPLICATE_LIB_OK=TRUE before importing torch on Anaconda (OpenMP clash).

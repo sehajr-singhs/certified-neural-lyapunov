@@ -23,12 +23,45 @@ not something the plan predicted. Dead ends are logged as carefully as successes
 ## Verifier tooling
 
 - PyPI `auto_LiRPA` is pinned at 0.3 (only 0.2 and 0.3 exist on the index). The
-  `JacobianOP` operator and GenBaB non-ReLU (sin, cos, ELU) branching we depend on
-  landed in the 12/2025 GitHub release and are NOT on PyPI, so both `auto_LiRPA`
-  and `alpha-beta-CROWN` must be installed from GitHub `main`, not pip. Installing
-  the PyPI wheel would silently give a verifier that cannot bound the Lie
-  derivative at all. Recorded here so nobody "fixes" requirements.txt back to pip.
-- IBM CROWN repo attempt: <pending, will record the exact error class>.
+  `JacobianOP` operator and GenBaB non-ReLU (sin, cos) branching we depend on are
+  NOT on PyPI, so `auto_LiRPA` must be installed from GitHub `main`. Installing the
+  PyPI wheel would silently give a verifier that cannot bound the Lie derivative.
+  Recorded so nobody "fixes" requirements.txt back to pip.
+- GitHub `main` `auto_LiRPA` (installs as version 0.7.2) pins `python ~=3.11.0`,
+  but this host is 3.13.9. Installed with `--ignore-requires-python`; the package
+  runs correctly on 3.13 (imports, JacobianOP, and CROWN bounds all work). The pin
+  is conservative, not a real 3.13 incompatibility.
+- Installing `auto_LiRPA` 0.7.2 downgraded torch from 2.13.0 to 2.11.0+cpu (its
+  dependency pin). The dynamics port tests were re-run on 2.11.0 and still pass.
+- IBM CROWN repo (IBM/CROWN-Robustness-Certification): confirmed dead on a modern
+  stack exactly as the spec predicted. It imports
+  `from tensorflow.contrib.keras.api.keras.models import Sequential`, and
+  `tensorflow.contrib` was removed in TF 2.0, so it needs TF 1.x. It is also wired
+  for image classifiers (`setup_mnist`, `setup_cifar`, MNIST/CIFAR data loaders),
+  not control systems. Error class: `ModuleNotFoundError` at import against a
+  TF1-only `tensorflow.contrib` API. We did not force a TF1 environment, we moved
+  to the maintained PyTorch auto_LiRPA as planned.
+
+## ELU is not natively supported, and the fix
+
+- This `auto_LiRPA` build registers `BoundSin` and `BoundCos` (trig works) plus
+  `BoundTanh`, `BoundSigmoid`, `BoundGelu`, `BoundSoftplus`, `BoundAtan`,
+  `BoundExp`, but there is NO `BoundElu`. Feeding a torch `ELU` gives
+  `NotImplementedError: unsupported operation onnx::Elu`. Her Lyapunov net uses
+  ELU, so this had to be resolved before any certification.
+- Fix, keeping her exact ELU function: express it in natively-boundable ops,
+  `ELU(x) = relu(x) - relu(1 - exp(-relu(-x)))`. The exp argument is confined to
+  [x_min, 0] so it cannot overflow, and every op (relu, exp, sub) has a bound
+  class. Verified: this identity matches `torch.nn.ELU` to 6e-8, and CROWN /
+  CROWN-Optimized produce SOUND bounds on it (checked against dense sampling),
+  with CROWN-Optimized recovering the exact interval on the test case. sin+cos
+  bounding is likewise sound and tight (CROWN-Optimized upper bound 1.647 vs true
+  1.644). Capability gate script: scratchpad/cap_test.py, promoted to
+  tests/test_verifier_ops.py.
+- Consequence for the port: `src/lyapunov.py` uses this ELU identity so the same
+  V is both trained in PyTorch and bounded by CROWN without re-expressing anything
+  at verification time. tanh is available as a fallback activation if the relu/exp
+  ELU ever proves too loose under BaB, noted but not currently needed.
 
 ## Discrepancies between her paper and her code (paper is ground truth for notation)
 

@@ -16,11 +16,29 @@ import torch
 import torch.nn as nn
 
 
+def elu_boundable(x):
+    """ELU(x) with alpha=1, written only in ops auto_LiRPA can bound.
+
+    auto_LiRPA has no BoundElu, so we use the identity
+        ELU(x) = relu(x) - relu(1 - exp(-relu(-x)))
+    which equals torch.nn.ELU to ~6e-8 and keeps the exp argument in [x_min, 0]
+    so it never overflows. This lets the SAME network train in PyTorch and be
+    bounded by CROWN with no re-expression at verification time. See NOTES.md and
+    tests/test_verifier_ops.py.
+    """
+    return torch.relu(x) - torch.relu(1.0 - torch.exp(-torch.relu(-x)))
+
+
+class BoundableELU(nn.Module):
+    def forward(self, x):
+        return elu_boundable(x)
+
+
 class LyapunovNet(nn.Module):
     def __init__(self, in_dim=18, hidden=50):
         super().__init__()
         self.dense1 = nn.Linear(in_dim, hidden)
-        self.act = nn.ELU()
+        self.act = BoundableELU()
         self.dense2 = nn.Linear(hidden, 1)
 
     def forward(self, z):
