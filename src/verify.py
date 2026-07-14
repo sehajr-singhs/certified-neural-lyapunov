@@ -63,26 +63,35 @@ def certify_box(cond, xL, xU, eps=0.0, method="CROWN-Optimized",
     heap = [(root_lb, 0, xL, xU)]
     n_sub = 0
     worst_lb = root_lb
-    counter = 0
+    verified_leaf_min = float("inf")      # min bound over FINAL verified leaves = certified margin
+    unresolved = 0            # leaves that could not be verified and had no CE found
+    uid = 1
     while heap:
         lb, _, bL, bU = heapq.heappop(heap)
         n_sub += 1
         if lb >= -eps:
-            continue                      # this leaf is verified
+            verified_leaf_min = min(verified_leaf_min, lb)
+            continue                      # this leaf is verified, soundly
+        # this box is not verified. try to resolve it.
         widths = (bU - bL).squeeze(0)
-        if widths.max().item() < min_width or n_sub > max_subdomains or (time.time() - t0) > time_budget:
-            # cannot refine: decide violation vs unknown by searching for a real CE
+        out_of_budget = n_sub > max_subdomains or (time.time() - t0) > time_budget
+        if widths.max().item() < min_width or out_of_budget:
+            # cannot refine further: look for a genuine counterexample inside
             found, xce, Fce = _search_counterexample(cond, bL, bU, eps, seed=seed)
             if found:
                 return dict(verdict="violation", certified=False,
                             counterexample=xce.numpy().ravel().tolist(), F_at_ce=Fce,
                             subdomains=n_sub, seconds=round(time.time() - t0, 2),
-                            worst_lower_bound=worst_lb, method=method)
+                            worst_lower_bound=min(worst_lb, lb), method=method)
+            # no CE found and cannot split: this region is genuinely unresolved.
+            # It is NEVER treated as verified. If we ran out of budget, stop now,
+            # otherwise keep going but remember the region stays unknown.
+            unresolved += 1
             worst_lb = min(worst_lb, lb)
-            counter += 1
-            if n_sub > max_subdomains or (time.time() - t0) > time_budget:
+            if out_of_budget:
                 return dict(verdict="unknown", certified=False,
                             reason=("timeout" if (time.time() - t0) > time_budget else "max_subdomains"),
+                            unresolved_leaves=unresolved,
                             subdomains=n_sub, seconds=round(time.time() - t0, 2),
                             worst_lower_bound=worst_lb, method=method)
             continue
@@ -95,10 +104,27 @@ def certify_box(cond, xL, xU, eps=0.0, method="CROWN-Optimized",
             clb = _bound_lower(bm, nL, nU, method)
             worst_lb = min(worst_lb, clb)
             if clb < -eps:
-                heapq.heappush(heap, (clb, n_sub, nL, nU))
-    return dict(verdict="verified", certified=True, eps=eps,
-                subdomains=n_sub, seconds=round(time.time() - t0, 2),
+                heapq.heappush(heap, (clb, uid, nL, nU)); uid += 1
+    # heap drained. verified only if every leaf was verified and none left unresolved.
+    if unresolved == 0:
+        cm = 0.0 if verified_leaf_min == float("inf") else verified_leaf_min
+        return dict(verdict="verified", certified=True, eps=eps,
+                    certified_lower_bound_F=round(cm, 5),
+                    subdomains=n_sub, seconds=round(time.time() - t0, 2),
+                    worst_intermediate_lb=round(worst_lb, 5), method=method)
+    return dict(verdict="unknown", certified=False, reason="unresolved_leaves",
+                unresolved_leaves=unresolved, subdomains=n_sub,
+                seconds=round(time.time() - t0, 2),
                 worst_lower_bound=worst_lb, method=method)
+
+
+def audit_verified(cond, xL, xU, eps=0.0, n_starts=4000, steps=200, seed=1):
+    """Independent soundness guard: strong PGD attack over the box. If a box was
+    certified F >= -eps, this must NOT find F < -eps. Returns the min F found;
+    a value below -eps means the certificate was unsound and must be rejected."""
+    found, x, Fv = _search_counterexample(cond, xL, xU, eps, iters=steps,
+                                           restarts=max(1, n_starts // 500), seed=seed)
+    return Fv
 
 
 def bound_ladder(cond, xL, xU):
