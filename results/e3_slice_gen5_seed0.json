@@ -1,0 +1,10 @@
+{
+  "seed": 0, "condition": "4b", "rung": "2 (gen-5 projected slice)",
+  "region_away_from_equilibrium": {"gen": 5, "delta_offset": [0.1, 0.5], "omega_offset": [0.1, 0.5]},
+  "verdict": "violation",
+  "note": "genuine counterexample, property (4b) is FALSE for the as-trained network",
+  "F_at_ce": -5.2176, "lie_at_ce": 5.2176,
+  "counterexample_gen5": {"delta": 0.9089, "omega": 0.1000},
+  "subdomains": 12, "seconds": 3.29, "method": "CROWN",
+  "bound_ladder_pm0p5_box": {"IBP": -129.51, "CROWN": -132.18, "CROWN_Optimized": -54.82}
+}
