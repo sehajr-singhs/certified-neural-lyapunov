@@ -57,7 +57,7 @@ def fig_money(s, xstar):
     """Her Fig. 2 geometry, V and Lie over the gen-5 slice, as-trained vs CEGIS,
     with the certified region and the counterexample drawn on top."""
     e3 = jload("e3_seed0.json")
-    dg = np.linspace(-0.4, 1.7, 240); wg = np.linspace(-0.4, 0.6, 200)
+    dg = np.linspace(-0.4, 1.75, 240); wg = np.linspace(-0.4, 1.75, 220)
     fig, ax = plt.subplots(2, 2, figsize=(11, 8), sharex=True, sharey=True)
     for col, (tag, ckpt) in enumerate([("as-trained V", "lyap_seed0.pt"),
                                         ("CEGIS V", "lyap_cegis_seed0.pt")]):
