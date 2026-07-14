@@ -1,13 +1,6 @@
 MIT License
 
-This repository is a derivative work, forked from
-Wenqi-Cui/Lyapunov-Regularized-RL. The original data, notebook, and figures are
-preserved unmodified under upstream/ and remain under the copyright below. New
-code in src/, experiments/, paper/, and colab/ is added by Sehaj Singh (2026) and
-released under the same MIT terms.
-
 Copyright (c) 2025 Wenqi-Cui
-Copyright (c) 2026 Sehaj Singh
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
