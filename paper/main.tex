@@ -261,7 +261,7 @@ genuine (a counterexample exists) or incompleteness (bound too loose).}
 \toprule
 Rung & dim & network & result \\
 \midrule
-1: two-bus     & 4  & trained here & certified $\rho=\rho_1$ \\
+1: two-bus     & 4  & trained here & certified $\rho=1.2$, audit $+0.34$ \\
 2: gen-5 slice & 2  & as-trained   & genuine viol., $\Lie=+5.22$ \\
 2: gen-5 slice & 2  & CEGIS        & certified $\rho=1.5$, audit $+2.43$ \\
 3: full state  & 20 & CEGIS        & genuine viol. at $r=0.01$ \\
@@ -278,7 +278,12 @@ independent attack then finds a minimum $F$ of $+2.43$ over the certified region
 and no further counterexamples appear through five more iterations
 (Fig.~\ref{fig:cegis}). Proposition 2 certifies an exponential decrease rate
 $\beta$ up to $3.97$ on the same region, so the result is not a binary
-verified-or-not but a certified rate. The same training also fixes (4a): the
+verified-or-not but a certified rate. Pushing the region outward, the certified
+sublevel radius reaches $\rho=2.0$ before a genuine counterexample appears at
+$\rho=2.5$, and across every rung of the staircase every failure the verifier
+reports is a genuine violation with a counterexample rather than an unresolved
+loose bound, which says the bounds are tight enough here that not-certified means
+false, not merely unproven. The same training also fixes (4a): the
 as-trained network has a genuine positive-definiteness counterexample with $V<\Vstar$
 on the annulus, which $200{,}000$ training samples reported satisfied on
 $100\%$ of draws, and the CEGIS network certifies (4a) there with a dense margin of

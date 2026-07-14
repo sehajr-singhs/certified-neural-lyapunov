@@ -1,0 +1,99 @@
+{
+  "seed": 0,
+  "eps_full": 0.05,
+  "slice_as_trained": {
+    "certified_rho": 0.0,
+    "first_failure": {
+      "rho": 0.25,
+      "outcome": "genuine_violation",
+      "verdict": "violation",
+      "F_at_ce": -2.4408960342407227,
+      "reason": null,
+      "subdomains": 9
+    },
+    "sweep": [
+      {
+        "rho": 0.25,
+        "outcome": "genuine_violation",
+        "verdict": "violation",
+        "F_at_ce": -2.4408960342407227,
+        "reason": null,
+        "subdomains": 9
+      }
+    ]
+  },
+  "slice_cegis": {
+    "certified_rho": 2.0,
+    "first_failure": {
+      "rho": 2.5,
+      "outcome": "genuine_violation",
+      "verdict": "violation",
+      "F_at_ce": -3.7228569984436035,
+      "reason": null,
+      "subdomains": 63
+    },
+    "sweep": [
+      {
+        "rho": 0.5,
+        "outcome": "certified",
+        "verdict": "verified",
+        "F_at_ce": null,
+        "reason": null,
+        "subdomains": 1
+      },
+      {
+        "rho": 1.0,
+        "outcome": "certified",
+        "verdict": "verified",
+        "F_at_ce": null,
+        "reason": null,
+        "subdomains": 8
+      },
+      {
+        "rho": 1.5,
+        "outcome": "certified",
+        "verdict": "verified",
+        "F_at_ce": null,
+        "reason": null,
+        "subdomains": 15
+      },
+      {
+        "rho": 2.0,
+        "outcome": "certified",
+        "verdict": "verified",
+        "F_at_ce": null,
+        "reason": null,
+        "subdomains": 41
+      },
+      {
+        "rho": 2.5,
+        "outcome": "genuine_violation",
+        "verdict": "violation",
+        "F_at_ce": -3.7228569984436035,
+        "reason": null,
+        "subdomains": 63
+      }
+    ]
+  },
+  "full20D_cegis": {
+    "certified_r": 0.0,
+    "first_failure": {
+      "r": 0.005,
+      "outcome": "genuine_violation",
+      "verdict": "violation",
+      "F_at_ce": -2.3957245349884033,
+      "reason": null,
+      "subdomains": 2
+    },
+    "sweep": [
+      {
+        "r": 0.005,
+        "outcome": "genuine_violation",
+        "verdict": "violation",
+        "F_at_ce": -2.3957245349884033,
+        "reason": null,
+        "subdomains": 2
+      }
+    ]
+  }
+}
