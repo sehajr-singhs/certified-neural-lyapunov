@@ -1,0 +1,16 @@
+# Rung 1, two-machine lossy system, 4-D state. The correctness gate.
+# These parameters drive certify_box (auto_LiRPA CROWN + input-space
+# branch-and-bound) in experiments/e3_rung1_twobus.py.
+condition: 4b
+state_dim: 4
+region:
+  type: annulus                 # [x* + inner, x* + inner + rho]^4
+  inner_offset: 0.05
+  rho_grid: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2]
+verifier:
+  method: CROWN                 # per-box bound, then branch-and-bound
+  min_width: 0.02
+  time_budget_s: 25
+audit:
+  type: pgd                     # independent soundness guard
+  reject_if_min_F_below: -1.0e-3

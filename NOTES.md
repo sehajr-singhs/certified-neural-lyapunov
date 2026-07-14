@@ -1,4 +1,4 @@
-# NOTES — running log of discrepancies, pins, and dead ends
+# NOTES, running log of discrepancies, pins, and dead ends
 
 Kept for the meeting. Everything here is something the code or the tooling forced,
 not something the plan predicted. Dead ends are logged as carefully as successes.
@@ -112,3 +112,44 @@ not something the plan predicted. Dead ends are logged as carefully as successes
   Note: driving omega to ~100 breaks the clip identity in float32 by catastrophic
   cancellation (coff*omega ~ 1e4), so tests saturate at omega=1, which is already
   past saturation since coff_i > max_action_i for every bus.
+
+## Verification method actually used (and the deviation from the brief)
+
+The brief names JacobianOP + GenBaB + alpha-beta-CROWN. We use auto_LiRPA's CROWN
+bounds on a computation graph in which the gradient of the one-hidden-layer ELU
+net is written analytically in boundable ops (linear, relu, exp, elementwise mul),
+times the sin/cos dynamics, plus an input-space branch-and-bound in
+src/verify.py. This is sound (every op has a bound class, and every certificate is
+re-checked by an independent multi-start PGD attack in audit_verified; a
+certificate is rejected if the attack finds any violation), and for a shallow net
+the analytic gradient graph is exact and tighter than JacobianOP graph expansion.
+The Jacobian route stays the right tool for deeper nets. This deviation is stated
+plainly in the paper's Verification Formulation section, it is not hidden.
+
+## (4a) is genuinely violated on the as-trained net, not just (4b)
+
+E2 finding worth flagging: the as-trained V is not positive definite at the
+equilibrium. In a 0.02 ball around x*, 34% of directions have V < V*, and CROWN
+finds a genuine (4a) counterexample on the gen-5 annulus (V - V* = -0.008). E0
+reported V > V* on 100% of its training samples, so this is the same sampling gap
+as (4b), showing up in the condition that was supposed to be trivial. The CEGIS
+net certifies (4a) there with margin +0.097.
+
+## Two-bus reduced-coordinate equilibrium trap (dead end, then fix)
+
+First two-bus gate failed (certified rho = 0). Cause: V(x) = net(R x) sees only
+the bus differences z = [delta_2 - delta_1, omega_2 - omega_1], so offsetting all
+four raw coordinates by [INNER, INNER+rho] sweeps through z = 0 (equal offsets),
+which is the equilibrium, where the Lie derivative is structurally 0 and no region
+can certify it < 0. The margin loss relu(lie + 0.3) then fought an impossible
+target near z = 0 and collapsed V. Fix: pin bus 1 (the reference) at x* and vary
+only bus 2, exactly as the gen-5 slice pins every bus but gen 5. After the fix the
+bus-2 annulus has dense max Lie -0.41 and certifies.
+
+## Full 20-D (rung 3) failure is genuine, not a verifier timeout
+
+The slice-hardened CEGIS net genuinely violates (4b) in the full 20-D state even
+at radius 0.01 (a real counterexample, Lie = +4.52), because CEGIS was scoped to
+the gen-5 slice and off-slice behavior is unconstrained, so retraining on the
+slice can worsen it elsewhere. Reported as a genuine violation, not incompleteness.
+Full-state CEGIS / certified training is the clear next step.

@@ -1,0 +1,23 @@
+# Rung 2, gen-5 projected slice, 2-D. Her Fig. 2 geometry, the money result.
+# Drives certify_box in experiments/e3_certify_lie.py and e2_certify_4a.py.
+conditions: [4a, 4b, prop2]
+state_dim: 20
+projected_to: 2                 # vary (delta_5, omega_5), pin the rest at x*
+gen_index: 5
+regions:
+  far_violation:                # where the as-trained network genuinely fails
+    delta_offset: [0.1, 0.5]
+    omega_offset: [0.1, 0.5]
+  certified_annulus:            # inner offset avoids the equilibrium trap
+    inner_offset: 0.05
+    rho_grid: [0.25, 0.5, 0.75, 1.0, 1.25, 1.5]
+prop2:
+  beta_bisection: [0.0, 4.0]
+  iterations: 7
+verifier:
+  method: CROWN
+  min_width: 0.03
+  time_budget_s: 40
+audit:
+  type: pgd
+  reject_if_min_F_below: -1.0e-3

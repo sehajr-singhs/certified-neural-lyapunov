@@ -49,31 +49,46 @@ system toolbox (paper reference [25]), and the linear droop coefficients in
 `Sol_lossy_std_0221.mat` were obtained by MATLAB `fmincon`. We do not regenerate
 any of these, we only read them.
 
+## The result, in two numbers
+
+Reproducing her Algorithm 1 gives 99.98% of sampled states satisfying the
+decrease condition, in line with her ~99.9%. On that same network a verifier
+finds genuine counterexamples to both Lyapunov conditions that 200,000 random
+samples miss entirely, and counterexample-guided retraining then certifies the
+gen-5 slice (her Fig. 2 geometry) for (4a), for (4b) out to a sublevel radius
+rho = 1.5, and for Proposition 2 an exponential rate beta up to 3.97, each audited
+by an independent attack. The certified region collapses as the state dimension
+grows, reported not hidden.
+
 ## Status
 
-This is an in-progress research artifact. Current state, honestly:
-
 - [x] Repo forked from her repo, structure laid out, her files preserved.
-- [x] PyTorch port of the lossy swing dynamics, saturated droop and stacked-ReLU
-      controllers, and the ELU Lyapunov net. Validated against an independent
-      numpy transcription of her dynamics to 6.4e-7 and a hand two-bus case to
-      1.6e-8 (`tests/test_dynamics.py`). See NOTES.md for the paper-vs-code
-      discrepancies this surfaced (the 2*pi angle scaling, the dropped damping
-      term, the reduced 18-D coordinates for V).
-- [ ] Verifier stack (auto_LiRPA + alpha-beta-CROWN from GitHub main), JacobianOP
-      and sin/cos/ELU bounding confirmed.
-- [ ] E0 reproduce her Algorithm 1 headline numbers.
-- [ ] E1 sampling gap, E2 certify (4a), E3 certify (4b)/Prop-2 staircase,
-      E4 CEGIS, E5 boundary.
-- [ ] Whitepaper, site, Colab notebook.
+- [x] PyTorch port of the dynamics, controllers, and ELU Lyapunov net, validated
+      against an independent numpy transcription to 6.4e-7 and a hand two-bus case
+      to 1.6e-8 (`tests/test_dynamics.py`). Paper-vs-code discrepancies in NOTES.md.
+- [x] Verifier stack: auto_LiRPA CROWN + input-space branch-and-bound, sin/cos
+      native, ELU via a relu/exp identity, every certificate re-checked by an
+      independent PGD audit (`tests/test_verifier_ops.py`, `src/verify.py`).
+- [x] E0 reproduce (99.98% decrease, 100% V>V*), E1 sampling gap (0 of 200k vs
+      6.1%), E2 certify (4a), E3 certify (4b)/Prop-2 staircase (rungs 1-4),
+      E4 CEGIS (rho 0 -> 1.5), E5 boundary.
+- [x] Whitepaper (`paper/main.pdf`), site (`index.html`), Colab (`colab/certify.ipynb`).
 
-Every number that reaches the paper, the site, or this README traces to a JSON a
-script wrote. Nothing here is claimed until a run produces it. See NOTES.md.
+Every number in the paper, the site, or this README traces to a per-seed JSON a
+script wrote. See NOTES.md.
 
-## Reproduce (foundation, runnable now)
+## Reproduce
 
 ```
 pip install -r requirements.txt      # plus the verifier from GitHub, see NOTES.md
+pip install --ignore-requires-python git+https://github.com/Verified-Intelligence/auto_LiRPA.git
 export KMP_DUPLICATE_LIB_OK=TRUE      # Anaconda + torch OpenMP workaround
-python tests/test_dynamics.py         # port correctness gate
+
+make quick     # smoke-test every path end to end, minutes on CPU
+make full      # the reported numbers: 5 seeds, every rung
+make figures   # regenerate every figure from saved JSON
+make paper     # compile the whitepaper PDF
 ```
+
+On this Windows host `python` is the broken Store shim, so pass the real
+interpreter: `make quick PYTHON=C:/Users/sehaj/anaconda3/python.exe`.

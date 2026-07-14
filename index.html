@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Certified Neural Lyapunov Functions for Power System Transient Stability</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]}};</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+  html{background:#ffffff;}
+  body{max-width:820px;margin:0 auto;padding:40px 24px 80px;
+    font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:1.7;color:#1a1a1a;background:#fff;}
+  a{color:#1f6fb2;text-decoration:none;} a:hover{text-decoration:underline;}
+  h1{font-size:34px;line-height:1.2;font-weight:bold;text-align:center;margin:0 0 14px;}
+  .subtitle{text-align:center;color:#6a6a6a;font-size:19px;margin:0 0 10px;}
+  .byline{text-align:center;color:#6a6a6a;font-size:16px;margin:0 0 16px;}
+  .toplinks{text-align:center;font-size:17px;margin:0 0 8px;} .toplinks a{margin:0 6px;}
+  h2{font-size:27px;font-weight:bold;text-align:center;margin-top:56px;padding-top:32px;border-top:1px solid #e6e6e6;}
+  .envlabel{font-size:21px;font-weight:bold;text-align:center;margin:40px 0 14px;}
+  p{margin:16px 0;} .lead{font-weight:bold;}
+  .abstract{background:#f5f5f5;padding:24px 28px;} .abstract p{text-align:justify;margin:0;}
+  .tldr{color:#6a6a6a;font-size:16.5px;margin:14px 2px 0;}
+  figure{margin:22px 0;text-align:center;} img{max-width:100%;height:auto;border:1px solid #e6e6e6;}
+  figcaption,.cap{color:#6a6a6a;font-size:14.5px;text-align:center;margin:8px auto 0;max-width:680px;}
+  table{border-collapse:collapse;margin:18px auto;font-size:14.5px;font-family:Georgia,serif;}
+  th,td{border:1px solid #ccc;padding:6px 11px;text-align:left;} th{background:#f5f5f5;font-weight:bold;}
+  td.win{font-weight:bold;}
+  pre{background:#f5f5f5;padding:16px 18px;overflow-x:auto;font-size:14px;font-family:'Courier New',monospace;line-height:1.5;}
+  .eq{text-align:center;margin:16px 0;overflow-x:auto;} .note{color:#6a6a6a;font-size:15px;}
+</style>
+</head>
+<body>
+
+<h1>Certified Neural Lyapunov Functions for Power System Transient Stability</h1>
+<p class="subtitle">A learned Lyapunov function that passes on 99.98% of samples still fails a verifier. Closing the loop with its counterexamples certifies a real region.</p>
+<p class="byline">Sehaj Singh &middot; with Prof. Wenqi Cui, NYU Tandon ECE &middot; 2026 &middot; simulation-only</p>
+<p class="toplinks">
+  [<a href="paper/main.pdf">Paper (PDF)</a>]
+  [<a href="https://arxiv.org/abs/2103.03869">Cui &amp; Zhang 2022</a>]
+  [<a href="https://github.com/Wenqi-Cui/Lyapunov-Regularized-RL">Her code</a>]
+  [<a href="https://github.com/sehajr-singhs/certified-neural-lyapunov">Our code</a>]
+  [<a href="colab/certify.ipynb">Colab</a>]
+</p>
+
+<figure>
+  <img src="static/figures/money_slice.png" alt="gen-5 slice, as-trained vs CEGIS">
+  <figcaption>The whole story on one slice, the gen-5 projection that matches Cui and Zhang's own
+  Fig. 2. Top row is \(V-V^\star\), bottom row is the Lie derivative, red where it is positive and so
+  violates the decrease condition. On the left the as-trained network looks stable but a verifier finds
+  a state where the Lie derivative is \(+5.22\), marked with an x. On the right the same architecture,
+  retrained on the verifier's counterexamples, certifies the green region.</figcaption>
+</figure>
+
+<h2>Abstract</h2>
+<div class="abstract">
+  <p>A neural Lyapunov function trained against randomly sampled violations can't be certified, because
+  a certificate quantifies over every point in a region while sampling only ever visits a measure-zero
+  subset, so the network can report a 99.98% empirical satisfaction rate and still fail the Lyapunov
+  conditions on a set that random sampling never lands on. We reproduce the Lyapunov-regularized
+  reinforcement learning of Cui and Zhang for the lossy Kron-reduced New England 39-bus swing model,
+  then use the neural network verifier CROWN with branch-and-bound over the nonlinear swing dynamics to
+  check the conditions over a region rather than a sample. The as-trained network violates both the
+  positive-definiteness condition and the Lie-derivative condition through genuine counterexamples that
+  a directed search finds immediately while 200,000 random samples find none, which means the gap is not
+  a sampling budget you can spend your way out of, it is that the violations concentrate exactly where a
+  random sampler almost never looks. So we close the loop, using the verifier itself as the sampler and
+  feeding its counterexamples back into training, and on the gen-5 slice that matches the authors' own
+  figure this certifies the Lie-derivative condition out to a sublevel radius \(\rho=1.5\) and an
+  exponential decrease rate \(\beta\) up to 3.97, both audited by an independent attack. The certified
+  region collapses as the state dimension grows, which we quantify rather than hide, and which is exactly
+  where the next work has to go.</p>
+</div>
+<p class="tldr"><span class="lead">TL;DR:</span> reproducing her training gives 99.98% of samples
+satisfying the decrease condition, yet a verifier finds genuine counterexamples for both Lyapunov
+conditions that 200,000 random draws miss entirely, and counterexample-guided retraining then certifies
+the gen-5 slice to \(\rho=1.5\) with a certified exponential rate \(\beta\) up to 3.97 and an independent
+attack margin of \(+2.43\).</p>
+
+<h2>Background</h2>
+<p>Transient stability asks whether the generators swing back to a synchronous equilibrium after a
+disturbance, and the classical certificate for that is an energy function. For a network with resistive
+losses there isn't one, because the conductance coupling enters the swing equations as a term
+\(G_{ij}\cos(\delta_i-\delta_j)\) that is not the gradient of any scalar, so no analytic energy function
+exists (Chiang 1989). That single term is why a valid Lyapunov function for lossy frequency dynamics has
+been open for decades, and it's the reason the frequency-control problem is the interesting one while the
+voltage-control problem, whose dynamics are linear, certifies directly without any of this.</p>
+<p>With state \(x=(\delta,\omega)\) the lossy swing dynamics on the 10 generator buses are</p>
+<div class="eq">$$\dot\delta_i = \omega_i, \qquad
+M_i\dot\omega_i = P_i - D_i\omega_i - u_i(\omega_i) - \sum_j B_{ij}\sin(\delta_i-\delta_j) - \sum_j G_{ij}\cos(\delta_i-\delta_j).$$</div>
+<p>Cui and Zhang get around the non-existence result by learning \(V_\phi\) as a small ELU network under
+a training loss that penalizes violations of the Lyapunov conditions on sampled states, and their paper's
+own last sentence names the gap it leaves: an important future direction is to verify the learned
+function satisfies the conditions for all points in a region, not just on samples. They report the Lie
+derivative is slightly positive on about 0.1% of sampled points. This project closes that gap.</p>
+
+<h2>Approach</h2>
+<p><span class="lead">The Lie derivative as a boundable graph.</span> Certifying the decrease condition
+means bounding \(\dot V(x)=\nabla V(x)\cdot f(x,u(x))\) over a box, so the gradient of \(V\) has to live
+inside the graph the verifier bounds. For a one-hidden-layer ELU network that gradient is analytic, and
+every operation in it, together with the \(\sin\) and \(\cos\) of the dynamics, is a natively boundable
+operator, so we write the scalar \(F(x)=-\dot V(x)\) as one computation graph and bound it with CROWN.
+This specializes the general-purpose route where auto_LiRPA's Jacobian operator expands gradient nodes
+and GenBaB branches the sin, cos, and ELU nonlinearities, and for a shallow network the analytic
+gradient is exact and its bounds are tighter.</p>
+<p><span class="lead">The equilibrium is a structural trap.</span> The Lie derivative is zero at the
+equilibrium by construction, so the decrease condition can't hold as a strict inequality on any region
+that contains it. We handle that the standard way, certifying on an annulus that excludes a small ball
+around the equilibrium, and reporting an explicit tolerance where one is used.</p>
+<p><span class="lead">Region of attraction by bisection.</span> The deliverable isn't one verified box, it's
+a certified sublevel set \(\{x: V(x)\le\rho\}\), found by bisecting on \(\rho\) for the largest set that
+verifies, which is forward invariant and is a certified inner approximation of the region of attraction.
+Every verified box is re-checked by an independent projected-gradient attack, and a certificate is
+rejected if the attack finds any violation, so an unsound bound can't slip through.</p>
+
+<h2 id="story">The Certification Story</h2>
+<p>Two figures carry the argument. The first is that a verifier finds what sampling can't, the second is
+that the verifier's own counterexamples are what fix it.</p>
+
+<div class="envlabel">The sampling gap, why a verifier is needed at all</div>
+<figure><img src="static/figures/sampling_gap.png" alt="random vs directed violation rate"></figure>
+<p>Same network, same region. Uniform random sampling finds a decrease-condition violation in 0 of
+200,000 draws, and its best sample has a Lie derivative of \(-9.6\), comfortably negative. A directed
+projected-gradient attack in the same region drives 6.1% of its starts to a violation, with a maximum Lie
+derivative of \(+199.9\). The violations are real and the random sampler never lands on them, which is the
+empirical case for a proof over the region rather than a statistic over a sample.</p>
+
+<div class="envlabel">Closing the loop, certified region against CEGIS iteration</div>
+<figure><img src="static/figures/cegis_curve.png" alt="certified region vs CEGIS iteration"></figure>
+<p>Feeding sound counterexamples back into training moves the certifiable sublevel radius from 0 to 1.5,
+the full grid maximum, in a single iteration, after which the attack finds a minimum \(F\) of \(+2.43\)
+over the certified region and no further counterexamples appear through five more iterations. The same
+retraining also fixes the positive-definiteness condition, which the as-trained network violated with a
+genuine \(V<V^\star\) counterexample that 200,000 training samples reported satisfied on 100% of draws.</p>
+
+<div class="envlabel">The staircase, and where it breaks</div>
+<figure><img src="static/figures/staircase.png" alt="certified region per rung"></figure>
+<p>Branch-and-bound cost grows with input dimension, so we report a staircase rather than claim
+full-state verification. A two-machine 4-D gate certifies a real annulus, which is the correctness check.
+The gen-5 slice certifies to \(\rho=1.5\). In the full 20-D state the slice-hardened network genuinely
+violates the decrease condition even in a box of radius 0.01, because the counterexample-guided training
+was scoped to the slice and doesn't transfer, so we report that as a genuine violation with its
+counterexample, not as a verifier timeout. That collapse with dimension is the honest boundary of the
+method as it stands.</p>
+
+<h2>Results</h2>
+<p class="note">Seed 0 shown; the stochastic experiments (training, attack, CEGIS) run over 5 seeds.
+Every number traces to a per-seed JSON a script wrote, and every figure regenerates from those JSON files.
+Simulation only, CPU wall-clock.</p>
+<table>
+  <tr><th>Result</th><th>Value</th></tr>
+  <tr><td>E0 reproduce: sampled decrease-condition satisfaction</td><td>99.98% (her \(\approx\)99.9%)</td></tr>
+  <tr><td>E0 reproduce: \(V>V^\star\) on samples</td><td>100%</td></tr>
+  <tr><td>E1 sampling gap: random (200k) vs directed violation rate</td><td class="win">0% vs 6.1%</td></tr>
+  <tr><td>E2 (4a) as-trained: verdict on gen-5 annulus</td><td>genuine violation, \(V-V^\star=-0.008\)</td></tr>
+  <tr><td>E2 (4a) CEGIS: verdict on gen-5 annulus</td><td class="win">certified \(\rho=1.5\), margin \(+0.097\)</td></tr>
+  <tr><td>E3 (4b) as-trained: gen-5 far region</td><td>genuine violation, \(\dot V=+5.22\)</td></tr>
+  <tr><td>E3 (4b) CEGIS: gen-5 annulus</td><td class="win">certified \(\rho=1.5\), audit \(+2.43\)</td></tr>
+  <tr><td>E3 Prop-2 CEGIS: certified exponential rate \(\beta\)</td><td class="win">up to 3.97</td></tr>
+  <tr><td>E3 bound ladder (IBP / CROWN / CROWN-Opt) on \(\pm0.5\) box</td><td>-129.5 / -132.2 / -54.8</td></tr>
+  <tr><td>E3 full 20-D: certified radius</td><td>0 (genuine violation at \(r=0.01\))</td></tr>
+  <tr><td>E4 CEGIS: certifiable \(\rho\), iteration 0 to 1</td><td class="win">0.0 to 1.5</td></tr>
+</table>
+
+<h2>Limitations</h2>
+<p>The certificate holds over the stated region and nowhere else. The model is the Kron-reduced lossy
+swing model that the authors train against, not full AC power flow, and it omits the explicit damping
+term, which the controller supplies. The equilibrium is fixed during training and verification, so a
+certificate used to assert stability rather than to regularize would have to account for how the
+equilibrium moves under load or parameter change, and this one doesn't. Verification cost grows with
+state dimension, and the counterexample-guided training here was scoped to the projected slice, so the
+full 20-D result is a genuine violation rather than a certified region, which is the honest boundary of
+the method as it stands. We use auto_LiRPA and CROWN, the maintained implementation of the algorithm
+family Prof. Cui pointed to, rather than the 2019 IBM CROWN repo, which is TensorFlow-1 and doesn't build
+on current Python. Everything is simulation, with no hardware.</p>
+
+<h2>Reproduce</h2>
+<pre>python -m pip install "torch==2.11.0" --index-url https://download.pytorch.org/whl/cpu
+python -m pip install numpy scipy matplotlib pyyaml pytest
+python -m pip install --ignore-requires-python \
+    "git+https://github.com/Verified-Intelligence/auto_LiRPA.git"
+
+make quick     # smoke-test every path end to end, minutes on CPU
+make full      # the reported numbers: 5 seeds, every rung
+make figures   # regenerate every figure from saved JSON
+make paper     # compile the whitepaper PDF from those figures</pre>
+<p class="note">colab/certify.ipynb runs the (4a) certification and the gen-5 rung of the (4b) staircase
+end to end on a free Colab, because she said Colab.</p>
+
+<h2>Where this goes</h2>
+<p>A certified region that grows under counterexample-guided training is the first step toward learned
+grid controllers that ship with a proof rather than a sampling statistic, because the learned policies
+Prof. Cui's line of work points toward only earn deployment if their safety survives as a proof over the
+operating envelope rather than a sampled score. The open problem is visible in the staircase, where the
+certified region shrinks as the state dimension grows, so the work that matters next is certified training
+over the full state, differentiating through the CROWN bound so the network is trained to be verifiable
+rather than retrained on counterexamples after the fact.</p>
+
+<h2>Citation</h2>
+<pre>@article{singh2026certifiedlyapunov,
+  title   = {Formal Certification of Neural Lyapunov Functions for Transient Stability in Lossy Power Networks},
+  author  = {Sehaj Singh},
+  year    = {2026},
+  note    = {Problem formulation and supervision by Prof. Wenqi Cui, NYU Tandon ECE},
+  howpublished = {\url{https://github.com/sehajr-singhs/certified-neural-lyapunov}}
+}
+
+@article{cui2022lyapunov,
+  title   = {Lyapunov-Regularized Reinforcement Learning for Power System Transient Stability},
+  author  = {Cui, Wenqi and Zhang, Baosen},
+  journal = {IEEE Control Systems Letters}, volume = {6}, pages = {974--979}, year = {2022}
+}</pre>
+
+</body>
+</html>
