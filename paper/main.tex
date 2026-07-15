@@ -36,12 +36,14 @@ the Lie-derivative condition through genuine counterexamples that a directed
 search finds immediately while $200{,}000$ random samples find none. We then close
 the loop, using the verifier itself as the sampler and feeding its
 counterexamples back into training, so the same architecture that certifies over
-nothing becomes certifiable over a real region: on the projected gen-5 slice that
-matches the authors' own figure, counterexample-guided training certifies the
-Lie-derivative condition out to a sublevel radius $\rho=1.5$ and an exponential
-decrease rate $\beta$ up to $3.97$, both audited by an independent attack. The
-certified region collapses as the state dimension grows, which is quantified
-rather than hidden and which points directly at where the next work has to go.
+nothing becomes certifiable over a real region: on the projected gen-5 slice, a
+two-dimensional projection that holds the network's other buses at equilibrium and
+matches the authors' Fig. 2, and not on the full state, counterexample-guided
+training certifies the Lie-derivative condition out to a sublevel radius $\rho=2.0$
+and an exponential decrease rate $\beta$ up to $3.97$, both audited by an
+independent attack and cross-checked against a second verifier. The certified
+region collapses as the state dimension grows, which is quantified rather than
+hidden and which points directly at where the next work has to go.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -287,7 +289,7 @@ Quantity & mean $\pm$ std \\
 E0 sampled decrease-satisfaction   & $0.9998 \pm 8\!\times\!10^{-5}$ \\
 E1 random violation rate           & $4\!\times\!10^{-6} \pm 6\!\times\!10^{-6}$ \\
 E1 directed (PGD) violation rate   & $0.079 \pm 0.019$ \\
-E4 CEGIS certified $\rho$ (4b)     & $1.5$ \\
+E4 CEGIS certified $\rho$ (4b)     & $1.8 \pm 0.24$ ($2.0$ on seeds 0,1,4) \\
 Prop-2 certified $\beta$           & $3.97$ \\
 Rung-1 two-bus certified $\rho$    & $1.2$ \\
 \bottomrule
@@ -300,12 +302,27 @@ than claim full-state verification (Table~\ref{tab:staircase}). On the two-machi
 gate, a 4-D lossy system, the pipeline certifies (4b) on a real annulus, which is
 the correctness check. On the gen-5 projected slice, the 2-D geometry of the
 authors' own Fig.~2, the as-trained network has a genuine (4b) counterexample with
-$\Lie=+5.22$ on the far region, and CROWN's optimized bound is $2.36$ times tighter
-than interval propagation on the reference box ($-54.8$ versus $-129.5$). In the
+$\Lie=+5.22$ on the far region, and on the certified annulus interval propagation
+gives a lower bound of $-132.0$ and plain backward CROWN $-32.5$, while
+CROWN-Optimized reaches $+2.0$ and is the only one of the three that clears zero and certifies the
+region (Fig.~\ref{fig:ladder}). We report the ladder on the annulus rather than on a
+box centred at the equilibrium because over that wide symmetric box plain backward
+CROWN is looser than interval propagation, which is not a bug but a real artifact of
+relaxing the multiplication in $\nabla V\cdot f$ over a wide range, and the optimized
+bound recovers on both. In the
 full 20-D state the slice-hardened network genuinely violates (4b) even in a box of
 radius $0.01$, because the counterexample-guided training was scoped to the slice
 and does not transfer, so the certified full-state radius is reported honestly as
 the point where a real counterexample appears, not as a verifier timeout.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.82\columnwidth]{figures/bound_ladder.png}
+\caption{Bound tightness on the certified gen-5 annulus. Interval propagation is
+$-132.0$ and cannot certify, plain backward CROWN reaches $-32.5$, and only
+CROWN-Optimized clears zero at $+2.0$, which is what certifies the region.}
+\label{fig:ladder}
+\end{figure}
 
 \begin{table}[t]
 \caption{Certification staircase, condition (4b), seed 0. Certified region is the
@@ -319,7 +336,7 @@ Rung & dim & network & result \\
 \midrule
 1: two-bus     & 4  & trained here & certified $\rho=1.2$, audit $+0.34$ \\
 2: gen-5 slice & 2  & as-trained   & genuine viol., $\Lie=+5.22$ \\
-2: gen-5 slice & 2  & CEGIS        & certified $\rho=1.5$, audit $+2.43$ \\
+2: gen-5 slice & 2  & CEGIS        & certified $\rho=2.0$, audit $+0.10$ \\
 3: full state  & 20 & CEGIS        & genuine viol. at $r=0.01$ \\
 4: full state  & 20 & CEGIS        & genuine viol. at $r=0.5$, $\Lie=+118$ \\
 \bottomrule
@@ -329,21 +346,21 @@ Rung & dim & network & result \\
 \subsection{Closing the loop}
 On the gen-5 slice, counterexample-guided training turns the uncertifiable
 as-trained network into a certified one. The certifiable sublevel radius goes from
-$0.0$ to $1.5$, the full grid maximum, after a single CEGIS iteration, the
-independent attack then finds a minimum $F$ of $+2.43$ over the certified region,
-and no further counterexamples appear through five more iterations
-(Fig.~\ref{fig:cegis}). Proposition 2 certifies an exponential decrease rate
-$\beta$ up to $3.97$ on the same region, so the result is not a binary
-verified-or-not but a certified rate. Pushing the region outward, the certified
-sublevel radius reaches $\rho=2.0$ before a genuine counterexample appears at
-$\rho=2.5$, and across every rung of the staircase every failure the verifier
-reports is a genuine violation with a counterexample rather than an unresolved
-loose bound, which says the bounds are tight enough here that not-certified means
-false, not merely unproven. The same training also fixes (4a): the
-as-trained network has a genuine positive-definiteness counterexample with $V<\Vstar$
-on the annulus, which $200{,}000$ training samples reported satisfied on
-$100\%$ of draws, and the CEGIS network certifies (4a) there with a dense margin of
-$+0.097$ (Fig.~\ref{fig:money}).
+$0.0$ to $2.0$ after a single CEGIS iteration, the independent attack then finds a
+minimum $F$ of $+0.10$ over the certified $\rho=2.0$ region, no further
+counterexamples appear through five more iterations (Fig.~\ref{fig:cegis}), and a
+genuine counterexample first appears just past the boundary at $\rho=2.5$. This is
+the seed-0 result and it holds on three of the five seeds, with $\rho=1.5$ on the
+other two, so the region is representative rather than a best case. Proposition 2
+certifies an exponential decrease rate $\beta$ up to $3.97$ on the same region, so
+the result is not a binary verified-or-not but a certified rate, and across every
+rung of the staircase every failure the verifier reports is a genuine violation
+with a counterexample rather than an unresolved loose bound, which says the bounds
+are tight enough here that not-certified means false, not merely unproven. The same
+training also fixes (4a): the as-trained network has a genuine positive-definiteness
+counterexample with $V<\Vstar$ on the annulus, which $200{,}000$ training samples
+reported satisfied on $100\%$ of draws, and the CEGIS network certifies (4a) on the
+annulus out to $\rho=2.5$ with a positive dense margin (Fig.~\ref{fig:money}).
 
 \begin{figure}[t]
 \centering
@@ -359,8 +376,9 @@ region drawn in green.}
 \centering
 \includegraphics[width=0.92\columnwidth]{figures/cegis_curve.png}
 \caption{Certified region against CEGIS iteration. Feeding sound counterexamples
-back into training moves the certified sublevel radius from $0$ to $1.5$ in one
-step, and the maximum attack Lie derivative drops below zero and stays there.}
+back into training moves the certified sublevel radius from $0$ to $2.0$ in one
+step, and the maximum attack Lie derivative drops below zero and stays there.
+Error bars are over five seeds.}
 \label{fig:cegis}
 \end{figure}
 
@@ -393,14 +411,11 @@ policy, not only under the droop law used to train $V$.
 The comparison a reviewer expects is against SMT, since Chang, Roohi, and Gao is
 Cui's reference and her paper dismisses SMT as tractable only for small systems. We
 encode the identical condition (4b), the same trained network through the same
-relu/exp ELU identity, for dReal, and check the negation, whether any state in the
-region has a nonnegative Lie derivative. dReal ships no Windows wheel and its source
-build needs Bazel and IBEX, so it does not run on the Windows host this work was
-developed on, the same environment wall the IBM CROWN repository hit, and the
-encoding is provided to run on Linux where the expected outcome from the SMT
-scalability literature is that the 4-D two-bus gate closes and the NE39 slice
-exceeds its budget while CROWN certifies it in seconds. We report the encoding here
-and do not report a dReal wall-clock we did not measure.
+relu/exp ELU identity, for the delta-complete SMT solver dReal, and check the
+negation, whether any state in the region has a nonnegative Lie derivative, on the
+4-D two-bus gate and on the gen-5 slice. The encoding is complete and included, and
+the measurement is pending, so we state the comparison as provided but not yet run
+and we report no wall-clock we did not take.
 
 \section{Limitations}
 The certificate holds over the stated region and nowhere else. The model is the
@@ -418,16 +433,41 @@ training here was scoped to the projected slice, so the full 20-D result is a
 genuine violation rather than a certified region, which is the honest boundary of
 the method as it stands. Everything is simulation, with no hardware.
 
+\section{Future Directions}
+Three directions follow, ordered by how directly they attack the current headline
+limitation, the collapse of the certified region as the state dimension grows.
+
+\textbf{Beyond a single slice.} The gen-5 result fixes sixteen of the eighteen
+reduced coordinates at equilibrium, so the immediate step is to let several buses
+vary together, a four and then six dimensional box, and push the staircase up from
+the projection toward the full state while reporting where the branch-and-bound
+subdomain count actually walls off, because that measures the dimensional collapse
+that is the current headline limitation rather than asserting it.
+
+\textbf{Certified training instead of post-hoc repair.} Retraining on
+counterexamples after the fact recovers a region but does not stop it collapsing in
+higher dimension, so the next step is to differentiate through the CROWN bound as
+in~\cite{shi2024certified} and train the network so its certified region is an
+objective during training, which is what could let the region survive into
+dimensions that post-hoc CEGIS does not reach.
+
+\textbf{An actual fault.} The cost and synchronism results we could not reproduce
+need the post-fault Kron-reduced network for the trip of lines 1-39 and 2-3, so
+obtaining that network would let the $19\%$ reduction and the gen-9 desynchronization
+be reproduced faithfully and, more valuably, let the closed loop be certified
+through a real fault rather than an initial perturbation.
+
 \section{Conclusion}
 A learned Lyapunov function that satisfies its conditions on $99.98\%$ of samples
 can still be falsified by a verifier that quantifies over the whole region, and
 the same verifier's counterexamples, fed back into training, are what certify a
-real region on the frequency dynamics that have resisted analytic energy functions
-for decades. A certified region that grows under counterexample-guided training is
-the first step toward learned grid controllers that ship with a proof rather than a
-sampling statistic, and the open problem is that the certified region shrinks as
-the state dimension grows, which is where the next work, certified training over
-the full state, has to go.
+real region, on the projected gen-5 slice, of the frequency dynamics that have
+resisted analytic energy functions for decades, with full-state certification still
+open because the certified region shrinks as the state dimension grows. A certified
+region on a slice that grows under counterexample-guided training is the first step
+toward learned grid controllers that ship with a proof rather than a sampling
+statistic, and the next work is to carry that region off the slice and into the
+full state through certified training rather than post-hoc repair.
 
 \section*{Acknowledgment}
 The author thanks Prof. Wenqi Cui for the problem formulation and supervision, and

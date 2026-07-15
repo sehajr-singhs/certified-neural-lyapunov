@@ -55,9 +55,12 @@ Reproducing her Algorithm 1 gives 99.98% of sampled states satisfying the
 decrease condition, in line with her ~99.9%. On that same network a verifier
 finds genuine counterexamples to both Lyapunov conditions that 200,000 random
 samples miss entirely, and counterexample-guided retraining then certifies the
-gen-5 slice (her Fig. 2 geometry) for (4a), for (4b) out to a sublevel radius
-rho = 1.5, and for Proposition 2 an exponential rate beta up to 3.97, each audited
-by an independent attack. The certified region collapses as the state dimension
+gen-5 slice (her Fig. 2 geometry, a 2-D projection with the other buses fixed at
+equilibrium, not the full state) for (4a) out to rho = 2.5, for (4b) out to a
+sublevel radius rho = 2.0 (seed 0; 1.5 to 2.0 across five seeds), and for
+Proposition 2 an exponential rate beta up to 3.97, each audited by an independent
+attack and cross-checked against a second, JacobianOP-based verifier with zero
+soundness contradictions. The certified region collapses as the state dimension
 grows, reported not hidden.
 
 ## Status
@@ -71,7 +74,10 @@ grows, reported not hidden.
       independent PGD audit (`tests/test_verifier_ops.py`, `src/verify.py`).
 - [x] E0 reproduce (99.98% decrease, 100% V>V*), E1 sampling gap (0 of 200k vs
       6.1%), E2 certify (4a), E3 certify (4b)/Prop-2 staircase (rungs 1-4),
-      E4 CEGIS (rho 0 -> 1.5), E5 boundary.
+      E4 CEGIS (rho 0 -> 2.0), E5 boundary.
+- [x] Verifier cross-check against auto_LiRPA JacobianOP (0 soundness contradictions),
+      Algorithm 2 RNN controller reproduced and re-certified, dReal SMT encoding
+      provided (runs on Colab/Linux, measurement pending).
 - [x] Whitepaper (`paper/main.pdf`), site (`index.html`), Colab (`colab/certify.ipynb`).
 
 Every number in the paper, the site, or this README traces to a per-seed JSON a
@@ -90,5 +96,5 @@ make figures   # regenerate every figure from saved JSON
 make paper     # compile the whitepaper PDF
 ```
 
-On this Windows host `python` is the broken Store shim, so pass the real
-interpreter: `make quick PYTHON=C:/Users/sehaj/anaconda3/python.exe`.
+The Makefile takes `PYTHON=<interpreter>` if `python` is not the one you want.
+The dReal SMT baseline runs on Linux or Colab via `colab/certify.ipynb`.

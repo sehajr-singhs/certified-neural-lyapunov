@@ -22,21 +22,21 @@
         "omega": 0.1
       },
       "subdomains": 14,
-      "seconds": 9.81,
+      "seconds": 12.01,
       "method": "CROWN"
     },
-    "bound_ladder_pm0p5_box": {
-      "IBP": -129.51199340820312,
-      "CROWN": -132.18319702148438,
-      "CROWN-Optimized": -54.81539535522461
+    "bound_ladder_cegis_annulus": {
+      "IBP": -131.97169494628906,
+      "CROWN": -32.490692138671875,
+      "CROWN-Optimized": 1.987117886543274
     },
     "cegis_4b_annulus": {
-      "certified_rho": 1.5,
+      "certified_rho": 2.0,
       "detail": {
-        "rho": 1.5,
+        "rho": 2.0,
         "certified_lower_bound_F": 0.0,
-        "audit_min_F": 2.4267,
-        "subdomains": 15
+        "audit_min_F": 0.1023,
+        "subdomains": 41
       }
     },
     "cegis_prop2_beta_max": 3.9688
@@ -49,9 +49,9 @@
       "r": 0.01,
       "verdict": "violation",
       "reason": null,
-      "F_at_ce": -4.5173726081848145,
-      "subdomains": 223,
-      "seconds": 49.18
+      "F_at_ce": -4.567261219024658,
+      "subdomains": 120,
+      "seconds": 51.84
     }
   },
   "rung4_full20D_scale": {
@@ -60,8 +60,8 @@
     "verdict": "violation",
     "reason": null,
     "certified": false,
-    "subdomains": 279,
-    "seconds": 64.5,
-    "F_at_ce": -118.02186584472656
+    "subdomains": 160,
+    "seconds": 68.2,
+    "F_at_ce": -81.59910583496094
   }
 }

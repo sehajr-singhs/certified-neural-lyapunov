@@ -57,7 +57,7 @@ def fig_money(s, xstar):
     """Her Fig. 2 geometry, V and Lie over the gen-5 slice, as-trained vs CEGIS,
     with the certified region and the counterexample drawn on top."""
     e3 = jload("e3_seed0.json")
-    dg = np.linspace(-0.4, 1.75, 240); wg = np.linspace(-0.4, 1.75, 220)
+    dg = np.linspace(-0.4, 2.2, 250); wg = np.linspace(-0.4, 2.2, 230)
     fig, ax = plt.subplots(2, 2, figsize=(11, 8), sharex=True, sharey=True)
     for col, (tag, ckpt) in enumerate([("as-trained V", "lyap_seed0.pt"),
                                         ("CEGIS V", "lyap_cegis_seed0.pt")]):
@@ -130,13 +130,13 @@ def fig_ladder():
     e3 = jload("e3_seed0.json")
     if not e3:
         return
-    bl = e3["rung2"]["bound_ladder_pm0p5_box"]
+    bl = e3["rung2"]["bound_ladder_cegis_annulus"]
     keys = ["IBP", "CROWN", "CROWN-Optimized"]; vals = [bl[k] for k in keys]
     fig, ax = plt.subplots(figsize=(6.2, 4))
     bars = ax.bar(keys, vals, color=["#bbb", "#6aa", "#276"])
     ax.axhline(0, color="k", lw=0.8)
-    ax.set_ylabel("lower bound on F = -Lie over the box")
-    ax.set_title("Bound tightness on the gen-5 $\\pm0.5$ box (less negative is tighter)")
+    ax.set_ylabel("lower bound on F = -Lie over the certified annulus")
+    ax.set_title("Bound tightness on the certified region (only CROWN-Opt clears 0)")
     for b, v in zip(bars, vals):
         ax.annotate("%.1f" % v, (b.get_x() + b.get_width() / 2, v), ha="center",
                     va="top" if v < 0 else "bottom", fontsize=9)

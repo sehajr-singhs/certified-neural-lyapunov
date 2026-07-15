@@ -205,3 +205,29 @@ outcome (results/e6_seed0.json):
     that answers her question for the learned policy.
 Fixed a real bug first: the three controllers were being compared on different
 disturbance batches (shared advancing generator); now a fixed eval set.
+
+## Finalization (2026-07-15): certified rho and the bound ladder
+
+Two numbers were inconsistent across documents and are now resolved, each against
+the JSON that produces it.
+
+Certified rho for the gen-5 (4b) CEGIS result is 2.0, not 1.5. The 1.5 was a grid
+artifact: E3 and E4 scanned rho only up to 1.5, so they reported the grid cap. E5's
+finer sweep (results/e5_seed0.json) and the JacobianOP cross-check
+(results/verifier_crosscheck_seed0.json) both find the true boundary is 2.0 with a
+genuine counterexample at 2.5. Extended E4 and E3 (and E2 for 4a) grids to 2.5 to
+match E5. Verified the CEGIS network is byte-identical after the E4 re-run (md5
+unchanged), because the retrain frontier is capped at 1.5 independently of the eval
+grid, so no downstream re-run was needed. Across five seeds the (4b) rho is
+2.0/2.0/1.5/1.5/2.0 = 1.8 +/- 0.24, so 2.0 is the seed-0 value and the modal value,
+reported as such, not as uniform. (4a) certifies to 2.5.
+
+Bound ladder: the old site table showed IBP/CROWN/CROWN-Opt = -129.5/-132.2/-54.8,
+CROWN looser than IBP, which looks impossible. Investigated: it is NOT a code bug.
+On the wide +/-0.5 box centred at the equilibrium with the as-trained network, plain
+backward CROWN is genuinely looser than interval propagation because the Lie graph
+multiplies grad V by xdot and relaxing a product over a wide range can beat CROWN's
+linear relaxation, while CROWN-Optimized recovers. On 3 of 4 boxes tested the ladder
+is monotone. We now report it on the certified CEGIS annulus, where it is monotone
+and tells a cleaner story: IBP -132.0 (useless), CROWN -32.5, CROWN-Optimized +2.0,
+the only bound that clears zero and certifies. e3 now writes bound_ladder_cegis_annulus.

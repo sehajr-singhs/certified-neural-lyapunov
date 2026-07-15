@@ -74,14 +74,19 @@ def rung2(s, xstar, n, seed, as_trained_ckpt, cegis_ckpt):
         counterexample_gen5=(dict(delta=round(ce[GI], 4), omega=round(ce[GI + n], 4))
                              if ce is not None else None),
         subdomains=r["subdomains"], seconds=r["seconds"], method=r["method"])
-    # tightness ladder on the +/-0.5 box, as-trained
-    xLb, xUb = slice_box(xstar, n, -0.5, 0.5, -0.5, 0.5)
-    out["bound_ladder_pm0p5_box"] = {k: v["lower_bound"] for k, v in bound_ladder(cond_at, xLb, xUb).items()}
-
     # CEGIS, near annulus: max certifiable rho for (4b)
     cond_ce = load_cond(s, xstar, cegis_ckpt, "4b")
+    # tightness ladder on the certified annulus with the CEGIS network. We report it
+    # here, not on the +/-0.5 box centred on the equilibrium, because that wide
+    # symmetric box makes plain backward CROWN's relaxation of the product-heavy Lie
+    # graph looser than interval propagation, a real artifact of relaxing a
+    # multiplication over a wide range and not a bug, and on it only CROWN-Optimized
+    # is meaningful. On the annulus the ladder is monotone and only the optimized
+    # bound certifies. See NOTES.md.
+    xLb, xUb = slice_box(xstar, n, INNER, INNER + 1.0, INNER, INNER + 1.0)
+    out["bound_ladder_cegis_annulus"] = {k: v["lower_bound"] for k, v in bound_ladder(cond_ce, xLb, xUb).items()}
     rho_max, detail = 0.0, None
-    for rho in [round(0.25 * k, 2) for k in range(1, 7)]:      # 0.25 .. 1.5
+    for rho in [round(0.5 * k, 2) for k in range(1, 6)]:       # 0.5 .. 2.5, matches E5
         xL, xU = slice_box(xstar, n, INNER, INNER + rho, INNER, INNER + rho)
         rr = certify_box(cond_ce, xL, xU, eps=0.0, method="CROWN",
                          min_width=0.03, time_budget=40, seed=seed)

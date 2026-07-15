@@ -108,7 +108,7 @@ def run(seed=0, iters=6):
     cond = LyapunovCondition(s, V, ctrl, mode="4b", x_star=xstar)
     opt = torch.optim.Adam(V.parameters(), lr=0.008)
     Vstar = lambda: V(xstar).reshape(())
-    rho_grid = [round(0.1 * k, 2) for k in range(1, 16)]     # 0.1 .. 1.5
+    rho_grid = [round(0.5 * k, 2) for k in range(1, 6)]      # 0.5 .. 2.5, matches E5
 
     history = []
     ce_pool = torch.empty(0, 2 * n)

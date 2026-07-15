@@ -94,7 +94,7 @@ def run(seed=0):
     s = load_system(); n = s["n"]
     xstar = torch.tensor(np.load(os.path.join(ROOT, "results", f"equilibrium_seed{seed}.npy")),
                          dtype=torch.float32).reshape(1, -1)
-    rho_grid = [round(0.25 * k, 2) for k in range(1, 7)]      # 0.25 .. 1.5
+    rho_grid = [round(0.5 * k, 2) for k in range(1, 6)]       # 0.5 .. 2.5, matches E5
 
     as_trained, cond_at = eval_net(s, xstar, n,
                                    os.path.join(ROOT, "results", f"lyap_seed{seed}.pt"),

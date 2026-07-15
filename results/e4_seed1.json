@@ -5,7 +5,7 @@
   "inner_offset": 0.05,
   "region": "gen-5 slice box [x*+INNER, x*+INNER+rho]^2 in (delta,omega)",
   "baseline_certified_rho": 0.0,
-  "final_certified_rho": 1.5,
+  "final_certified_rho": 2.0,
   "iterations": [
     {
       "iter": 0,
@@ -14,77 +14,77 @@
       "frontier_counterexamples": 512,
       "frontier_max_lie": 2.4738,
       "certified_detail": null,
-      "iter_seconds": 4.0
+      "iter_seconds": 16.3
     },
     {
       "iter": 1,
-      "certified_rho": 1.5,
-      "certified_area": 2.25,
+      "certified_rho": 2.0,
+      "certified_area": 4.0,
       "frontier_counterexamples": 0,
       "frontier_max_lie": -2.9221,
       "certified_detail": {
-        "rho": 1.5,
+        "rho": 2.0,
         "certified_lower_bound_F": 0.0,
-        "audit_min_F": 2.9221,
-        "subdomains": 10
+        "audit_min_F": 0.4269,
+        "subdomains": 28
       },
-      "iter_seconds": 39.7
+      "iter_seconds": 64.5
     },
     {
       "iter": 2,
-      "certified_rho": 1.5,
-      "certified_area": 2.25,
+      "certified_rho": 2.0,
+      "certified_area": 4.0,
       "frontier_counterexamples": 0,
       "frontier_max_lie": -2.9221,
       "certified_detail": {
-        "rho": 1.5,
+        "rho": 2.0,
         "certified_lower_bound_F": 0.0,
-        "audit_min_F": 2.9221,
-        "subdomains": 10
+        "audit_min_F": 0.4269,
+        "subdomains": 28
       },
-      "iter_seconds": 50.7
+      "iter_seconds": 35.0
     },
     {
       "iter": 3,
-      "certified_rho": 1.5,
-      "certified_area": 2.25,
+      "certified_rho": 2.0,
+      "certified_area": 4.0,
       "frontier_counterexamples": 0,
       "frontier_max_lie": -2.9221,
       "certified_detail": {
-        "rho": 1.5,
+        "rho": 2.0,
         "certified_lower_bound_F": 0.0,
-        "audit_min_F": 2.9221,
-        "subdomains": 10
+        "audit_min_F": 0.4269,
+        "subdomains": 28
       },
-      "iter_seconds": 51.2
+      "iter_seconds": 29.1
     },
     {
       "iter": 4,
-      "certified_rho": 1.5,
-      "certified_area": 2.25,
+      "certified_rho": 2.0,
+      "certified_area": 4.0,
       "frontier_counterexamples": 0,
       "frontier_max_lie": -2.9221,
       "certified_detail": {
-        "rho": 1.5,
+        "rho": 2.0,
         "certified_lower_bound_F": 0.0,
-        "audit_min_F": 2.9221,
-        "subdomains": 10
+        "audit_min_F": 0.4269,
+        "subdomains": 28
       },
-      "iter_seconds": 72.6
+      "iter_seconds": 54.7
     },
     {
       "iter": 5,
-      "certified_rho": 1.5,
-      "certified_area": 2.25,
+      "certified_rho": 2.0,
+      "certified_area": 4.0,
       "frontier_counterexamples": 0,
       "frontier_max_lie": -2.9221,
       "certified_detail": {
-        "rho": 1.5,
+        "rho": 2.0,
         "certified_lower_bound_F": 0.0,
-        "audit_min_F": 2.9221,
-        "subdomains": 10
+        "audit_min_F": 0.4269,
+        "subdomains": 28
       },
-      "iter_seconds": 50.6
+      "iter_seconds": 49.6
     }
   ]
 }

@@ -14,7 +14,7 @@
       "frontier_counterexamples": 512,
       "frontier_max_lie": 1.61,
       "certified_detail": null,
-      "iter_seconds": 3.9
+      "iter_seconds": 11.6
     },
     {
       "iter": 1,
@@ -28,7 +28,7 @@
         "audit_min_F": 2.1576,
         "subdomains": 14
       },
-      "iter_seconds": 43.5
+      "iter_seconds": 40.4
     },
     {
       "iter": 2,
@@ -42,7 +42,7 @@
         "audit_min_F": 2.1576,
         "subdomains": 14
       },
-      "iter_seconds": 45.9
+      "iter_seconds": 40.3
     },
     {
       "iter": 3,
@@ -56,7 +56,7 @@
         "audit_min_F": 2.1576,
         "subdomains": 14
       },
-      "iter_seconds": 45.5
+      "iter_seconds": 43.7
     },
     {
       "iter": 4,
@@ -70,7 +70,7 @@
         "audit_min_F": 2.1576,
         "subdomains": 14
       },
-      "iter_seconds": 48.2
+      "iter_seconds": 43.4
     },
     {
       "iter": 5,
@@ -84,7 +84,7 @@
         "audit_min_F": 2.1576,
         "subdomains": 14
       },
-      "iter_seconds": 58.7
+      "iter_seconds": 40.3
     }
   ]
 }
