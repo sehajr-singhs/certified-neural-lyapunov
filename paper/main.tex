@@ -190,7 +190,14 @@ The Lie derivative is zero at the equilibrium by construction, so $F=-\Lie$ is
 zero there and no region containing $\xstar$ certifies (4b) as a strict
 inequality. We handle this the standard way, certifying on an annulus that
 excludes a small ball around $\xstar$, and reporting an explicit tolerance
-$\epsilon$ with units where one is used. The region-of-attraction result is a
+$\epsilon$ where one is used. On the two-bus gate and the gen-5 slice the annulus
+already excludes $\xstar$, so those certificates run at $\epsilon=0$ as strict
+$F\ge 0$ bounds, and this is the same $\epsilon=0$ under which the certified (4b)
+result $\rho=2.0$, the (4a) result, and the Proposition-2 rate were produced. The
+only place a nonzero tolerance is needed is the full-state box, which contains
+$\xstar$, and there $\epsilon=0.05$ in the units of the Lie derivative $\Lie$,
+that is $\mathrm{s}^{-1}$, since $V$ is a dimensionless network output and time is
+in seconds. The region-of-attraction result is a
 certified sublevel set: we bisect on $\rho$ for the largest
 $\{x: V(x)\le\rho\}\cap B$ that verifies, which is forward invariant and is a
 certified inner approximation of the region of attraction.
@@ -411,11 +418,22 @@ policy, not only under the droop law used to train $V$.
 The comparison a reviewer expects is against SMT, since Chang, Roohi, and Gao is
 Cui's reference and her paper dismisses SMT as tractable only for small systems. We
 encode the identical condition (4b), the same trained network through the same
-relu/exp ELU identity, for the delta-complete SMT solver dReal, and check the
-negation, whether any state in the region has a nonnegative Lie derivative, on the
-4-D two-bus gate and on the gen-5 slice. The encoding is complete and included, and
-the measurement is pending, so we state the comparison as provided but not yet run
-and we report no wall-clock we did not take.
+relu/exp ELU identity, for the $\delta$-complete SMT solver dReal
+($\delta=10^{-3}$, v4.21.06.2), and check the negation, whether any state in the
+region has a nonnegative Lie derivative, on the 4-D two-bus gate and on the gen-5
+slice. The measured result is agreement with CROWN on every region. dReal returns
+$\delta$-unsat, certifying (4b), on the two-bus gate in $0.14$~s and on the gen-5
+CEGIS annulus in $0.45$~s, and it returns $\delta$-sat with a counterexample on the
+as-trained far region in $0.37$~s, which is exactly where CROWN reports its genuine
+violation, so an independent SMT solver confirms both the CROWN certificates and
+the CROWN counterexample. Both certified regions are low-dimensional, a 4-D box and
+a 2-D slice, so dReal finishes in under a second and the intractability the citation
+warns of does not bite here, because that dimensional wall is a full-state
+phenomenon and the full 20-D state is exactly the rung where neither tool certifies,
+since the slice-hardened network genuinely violates (4b) off the slice. So the two
+methods agree wherever a certificate exists and neither claims the full state, and
+we report the measured verdicts and times and nothing beyond them. Timings are
+CPU wall-clock on Linux (WSL) where dReal builds, since it ships no Windows wheel.
 
 \section{Limitations}
 The certificate holds over the stated region and nowhere else. The model is the

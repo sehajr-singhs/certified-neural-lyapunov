@@ -181,8 +181,19 @@ search always uses the analytic function via certify_box(eval_cond=...).
 pip has only an sdist for dreal (dreal-4.20.4.1.tar.gz), no Windows wheel, and the
 source build needs Bazel + IBEX which do not build on Windows, same class of dead
 end as the IBM CROWN repo. The dReal baseline encoding is provided runnable on
-Colab/Linux (Colab is Linux, `pip install dreal` works there). Numbers to be
-produced on Colab.
+Colab/Linux (Colab is Linux, `pip install dreal` works there).
+
+Update (2026-07-15): numbers produced on WSL2 Ubuntu 24.04, not Colab. The pip
+`dreal` wheel exists only up to cp311, so the run used a uv-provisioned Python
+3.11 venv; the wheel ships only the bindings, so libibex (from ppa:dreal/dreal,
+the 24.04 build) and the CoinOR/nlopt shared libs were extracted from their debs
+without sudo and put on LD_LIBRARY_PATH. dReal 4.21.06.2, delta=1e-3. Result
+(results/dreal_seed0_rung{1,2}.json, dreal_seed0_control.json): rung 1 two-bus
+gate delta-unsat in 0.14s, rung 2 gen-5 slice delta-unsat in 0.45s, both agreeing
+with CROWN, and a positive control on the as-trained far region returns delta-sat
+in 0.37s, agreeing with CROWN's genuine violation there. Both certified regions
+are low-dimensional so dReal is sub-second; it does NOT exceed budget, so the
+earlier "rung 2 expected to time out" guess was wrong and is not written anywhere.
 
 ## Algorithm 2 (Task 3): controller reproduced, fault numbers not, certificate extends
 

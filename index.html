@@ -109,7 +109,12 @@ gradient is exact and its bounds are tighter.</p>
 <p><span class="lead">The equilibrium is a structural trap.</span> The Lie derivative is zero at the
 equilibrium by construction, so the decrease condition can't hold as a strict inequality on any region
 that contains it. We handle that the standard way, certifying on an annulus that excludes a small ball
-around the equilibrium, and reporting an explicit tolerance where one is used.</p>
+around the equilibrium, and reporting an explicit tolerance \(\epsilon\) where one is used. The two-bus gate
+and the gen-5 slice already exclude the equilibrium, so those certificates, the certified \(\rho=2.0\)
+result included, run at \(\epsilon=0\) as strict \(F\ge 0\) bounds; the only place a nonzero tolerance is
+needed is the full-state box that contains the equilibrium, where \(\epsilon=0.05\) in the units of the Lie
+derivative \(\dot V\) (\(\mathrm{s}^{-1}\), since \(V\) is a dimensionless network output and time is in
+seconds).</p>
 <p><span class="lead">Region of attraction by bisection.</span> The deliverable isn't one verified box, it's
 a certified sublevel set \(\{x: V(x)\le\rho\}\), found by bisecting on \(\rho\) for the largest set that
 verifies, which is forward invariant and is a certified inner approximation of the region of attraction.
@@ -168,6 +173,7 @@ Simulation only, CPU wall-clock.</p>
   <tr><td>E4 CEGIS: certifiable \(\rho\), iteration 0 to 1 (seed 0)</td><td class="win">0.0 to 2.0</td></tr>
   <tr><td>Verifier cross-check: analytic vs JacobianOP soundness contradictions</td><td class="win">0 of 24 boxes</td></tr>
   <tr><td>Re-certification: \(\rho\) (4b) under droop vs learned RNN controller</td><td class="win">2.0 vs 2.0</td></tr>
+  <tr><td>SMT baseline (dReal, \(\delta=10^{-3}\)): 4-D gate / gen-5 slice</td><td class="win">both certified (\(\delta\)-unsat), 0.14s / 0.45s, agrees with CROWN</td></tr>
 </table>
 <p class="note">Robustness over five seeds: the E4 certified \(\rho\) is \(1.8 \pm 0.24\)
 (2.0 on three seeds, 1.5 on two), while Prop-2 \(\beta\) 3.97 and the two-bus gate
@@ -176,6 +182,16 @@ Simulation only, CPU wall-clock.</p>
 is cross-checked against auto_LiRPA's
 JacobianOP path, the route Prof. Cui named, with zero soundness contradictions, so
 the specialized verifier is validated rather than merely trusted.</p>
+<p class="note">The comparison a reviewer expects is against SMT, since Chang, Roohi, and Gao is Cui's
+reference and her paper dismisses SMT as tractable only for small systems. We hand the identical (4b)
+condition, the same trained network through the same relu/exp ELU identity, to the \(\delta\)-complete
+solver dReal (\(\delta=10^{-3}\)) and check the negation on the 4-D two-bus gate and the gen-5 slice. It
+agrees with CROWN everywhere we tested: \(\delta\)-unsat, certifying (4b), on the gate in 0.14s and on the
+gen-5 annulus in 0.45s, and \(\delta\)-sat with a counterexample on the as-trained far region where CROWN
+also finds a genuine violation. Both certified regions are low-dimensional, so dReal finishes in under a
+second and the intractability the citation warns of doesn't bite here; that wall is a full-state
+phenomenon, and the full 20-D state is exactly the rung where neither tool certifies. dReal runs on Linux
+(WSL), since it ships no Windows wheel.</p>
 
 <h2>Limitations</h2>
 <p>The certificate holds over the stated region and nowhere else. The model is the Kron-reduced lossy

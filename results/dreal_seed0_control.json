@@ -1,0 +1,15 @@
+{
+  "seed": 0,
+  "solver": "dReal",
+  "dreal_version": "4.21.6.2",
+  "host": "WSL2 Ubuntu 24.04, CPU",
+  "delta": 0.001,
+  "network": "as-trained (lyap_seed0.pt)",
+  "region": "gen-5 far region, delta/omega offset [0.1, 0.5]",
+  "control": "positive control: CROWN finds a genuine (4b) violation here (Lie=+5.22), dReal must agree",
+  "seconds": 0.37,
+  "result": "counterexample",
+  "verdict": "delta-sat",
+  "model": "x4 : [0.50995754012910766, 0.50998195419379044]\nx14 : [0.10781247896375135, 0.10783689302570565]",
+  "note": "dReal returns delta-sat, agreeing with CROWN that (4b) is violated on the as-trained far region"
+}

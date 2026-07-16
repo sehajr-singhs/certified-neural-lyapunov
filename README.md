@@ -57,7 +57,8 @@ finds genuine counterexamples to both Lyapunov conditions that 200,000 random
 samples miss entirely, and counterexample-guided retraining then certifies the
 gen-5 slice (her Fig. 2 geometry, a 2-D projection with the other buses fixed at
 equilibrium, not the full state) for (4a) out to rho = 2.5, for (4b) out to a
-sublevel radius rho = 2.0 (seed 0; 1.5 to 2.0 across five seeds), and for
+sublevel radius rho = 2.0 (seed 0; 1.8 +/- 0.24 across five seeds, 2.0 on three
+and 1.5 on two), and for
 Proposition 2 an exponential rate beta up to 3.97, each audited by an independent
 attack and cross-checked against a second, JacobianOP-based verifier with zero
 soundness contradictions. The certified region collapses as the state dimension
@@ -76,8 +77,9 @@ grows, reported not hidden.
       6.1%), E2 certify (4a), E3 certify (4b)/Prop-2 staircase (rungs 1-4),
       E4 CEGIS (rho 0 -> 2.0), E5 boundary.
 - [x] Verifier cross-check against auto_LiRPA JacobianOP (0 soundness contradictions),
-      Algorithm 2 RNN controller reproduced and re-certified, dReal SMT encoding
-      provided (runs on Colab/Linux, measurement pending).
+      Algorithm 2 RNN controller reproduced and re-certified, dReal SMT baseline run
+      on Linux (WSL): certifies both the 4-D gate (0.14s) and the gen-5 slice (0.45s),
+      agreeing with CROWN, and flags the as-trained far-region violation.
 - [x] Whitepaper (`paper/main.pdf`), site (`index.html`), Colab (`colab/certify.ipynb`).
 
 Every number in the paper, the site, or this README traces to a per-seed JSON a

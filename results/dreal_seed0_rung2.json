@@ -5,6 +5,17 @@
   "solver": "dReal",
   "delta": 0.001,
   "time_budget_s": 600,
-  "result": "dreal_unavailable",
-  "note": "dReal has no Windows wheel and its source build needs Bazel+IBEX; run this on Colab or Linux. No number fabricated."
+  "dreal_version": "4.21.6.2",
+  "host": "WSL2 Ubuntu 24.04, CPU",
+  "region": {
+    "free_idx": [
+      4,
+      14
+    ],
+    "inner_offset": 0.05,
+    "rho": 1.5
+  },
+  "seconds": 0.45,
+  "result": "certified",
+  "note": "delta-unsat: no state in the region has Lie>=0, so (4b) holds; agrees with CROWN"
 }
