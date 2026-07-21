@@ -337,6 +337,13 @@ enforced in code and nothing above 2-D can run from it.
 
 ## E7 results (2026-07-21): certified training beats CEGIS on the same network, same verifier
 
+HEADLINE FINDING (Prof. Cui's framing, recorded verbatim for the record): on the gen-5 2-D slice,
+certified training certifies E7 rho = 2.5 on ALL FIVE seeds, against CEGIS rho = 2.0 (seed 0; 1.8 +/-
+0.24 over five seeds), on the SAME warm-started network, at the SAME Prop-2 rate beta = 3.97, read out
+of the SAME audited certify_box bisection. A larger certified region than CEGIS on the identical
+network at the same beta, verifiable-by-construction rather than repaired. This is what clears the 2-D
+gate and earns the later dimensional climb.
+
 Ran experiments/e7_certified_train.py --all, five seeds, on the anaconda python (3.13.9, torch
 2.11.0+cpu, auto_LiRPA 0.7.2), KMP_DUPLICATE_LIB_OK=TRUE. Numbers, all from the identical audited
 certify_box E4/E3 used, not the training-time BaB:
@@ -367,6 +374,11 @@ certify_box E4/E3 used, not the training-time BaB:
   three PPA-installed libs are now missing from the WSL system (ldd on _dreal_py.so shows "not found").
   Not auto-reinstalling system packages under sudo for one cross-check; the encoding is ready and runs
   on Colab or a restored dReal host. The primary independent verifier (JacobianOP) covers soundness.
+  GAP TO CLOSE BEFORE A PAPER: this means the three-independent-verifier cross-check (analytic CROWN,
+  auto_LiRPA JacobianOP, dReal SMT) is TEMPORARILY TWO-WAY on E7. "three independent verifiers agree"
+  was a load-bearing credibility point in the prior project, so restoring dReal in WSL (add the dReal
+  PPA, apt-install libibex/libClp, rerun the E7 seed-0 (4b) delta-unsat to match the committed baseline)
+  is worth doing before any of this feeds a paper. Recording the gap now; not spending effort on it here.
 - Training cost: steps reduced from 1200 to 400 in configs/certified_train.yaml after the first full
   run showed the warm-started net converges by ~step 100 (frac_4b_verified=1.0, loss=0, cells stable
   at 18) and the remaining 1100 steps were identical no-ops. 400 leaves 4x margin. Wall-clock ~6 min
