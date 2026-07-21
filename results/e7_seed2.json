@@ -1,0 +1,73 @@
+{
+  "experiment": "e7_certified_train",
+  "seed": 2,
+  "method_name": "CT-BaB (Shi et al. 2411.18235)",
+  "slice_dim": 2,
+  "active_buses": [
+    5
+  ],
+  "active_dims": [
+    4,
+    14
+  ],
+  "gen": 5,
+  "inner_offset": 0.05,
+  "region": "gen-5 slice box [x*+INNER, x*+INNER+rho]^2 in (delta,omega)",
+  "warmstart": {
+    "warmstart": "C:\\Users\\sehaj\\cnl-work\\results\\lyap_seed2.pt",
+    "warmstart_loaded": true,
+    "init_param_l2": 19.464231
+  },
+  "certified_rho": 2.5,
+  "certified_rho_detail": {
+    "rho": 2.5,
+    "certified_lower_bound_F": 0.0,
+    "audit_min_F": 5.5068,
+    "subdomains": 10
+  },
+  "certified_rho_seconds": 25.6,
+  "prop2_beta_max": 3.9688,
+  "prop2_beta_seconds": 46.5,
+  "headline_verifier": "src/verify.py::certify_box, CROWN, eps=0, min_width=0.03/0.04, audited by PGD; identical to E4/E3",
+  "jacobian_crosscheck": {
+    "rho_4b": {
+      "analytic": 2.5,
+      "jacobian": 2.5,
+      "analytic_s": 16.8,
+      "jacobian_s": 44.3
+    },
+    "prop2_beta": {
+      "analytic": 3.9375,
+      "jacobian": 3.9375
+    },
+    "soundness_scan": {
+      "n_boxes": 24,
+      "contradictions": 0,
+      "worst_gap": 0.0,
+      "worst_case": null
+    },
+    "agreement": true,
+    "disagreements": []
+  },
+  "dreal_crosscheck": {
+    "condition": "4b",
+    "solver": "dReal",
+    "delta": 0.001,
+    "region": "gen-5 slice [x*+0.05, x*+0.05+2.5]^2 (delta,omega)",
+    "result": "dreal_unavailable",
+    "note": "dReal ships no Windows wheel and its source build needs Bazel+IBEX; run experiments/e7_certified_train.py on Colab/Linux to execute it. The encoding is built from the analytic V/grad in src/graphs.py, so it certifies the identical function CROWN does. No number fabricated."
+  },
+  "train_seconds": 382.4,
+  "train_steps": 400,
+  "train_diagnostics": {
+    "final_cells": 18,
+    "frac_4b_verified_traincells": 1.0,
+    "min_lb_4b_traincells": 0.36,
+    "note": "training-time BaB is coarser than the verifier; diagnostic only"
+  },
+  "cegis_reference": {
+    "cegis_final_certified_rho": 1.5,
+    "cegis_prop2_beta_max": 3.9688
+  },
+  "checkpoint": "results\\lyap_certtrain_seed2.pt"
+}

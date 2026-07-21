@@ -1,0 +1,46 @@
+# Certified training (CT-BaB) on a projected slice of the NE39 swing model.
+# This is the ONE file the later dimensional climb edits. To go from the 2-D gen-5
+# slice to an N-D slice, add generator buses to `active_buses` and nothing else in
+# the code changes. See SCALING.md.
+
+slice:
+  active_buses: [5]        # 1-indexed generators whose (delta, omega) vary.
+                           #   [5]     -> 2-D, Cui and Zhang Fig. 2 gen-5 slice
+                           #   [5, 9]  -> 4-D, gens 5 and 9 vary together
+                           #   [1,5,9] -> 6-D, and so on. slice_dim = 2 * len.
+  inner_offset: 0.05       # box sits this far off the equilibrium (avoids the
+                           # reduced-coordinate equilibrium trap at offset 0)
+  rho_target: 2.5          # target box side; training pushes the certified margin
+                           # non-negative over [x*+inner, x*+inner+rho_target]
+
+train:
+  warmstart: true          # start from the as-trained lyap_seed{k}.pt (else random)
+  steps: 400               # warm-started V converges by ~step 100 (frac_4b=1.0,
+                           # loss=0, cells stable at 18); 400 leaves 4x margin for
+                           # slower seeds. Raise for higher-dim slices (see SCALING.md).
+  lr: 0.006
+  eps: 0.15                # certified-margin target: push lb_F >= eps
+  margin_4a: 0.05          # positive-definiteness margin, the anti-collapse term
+  w_4a: 0.5                # weight on the (4a) V - V* hinge
+  w_pgd: 0.5               # weight on the PGD empirical worst-case hinge
+  method: CROWN            # differentiable training bound (plain linear prop)
+
+bab:                       # training-time branch-and-bound over the target box
+  init_max_side: 0.7       # initial grid cell max side length (Shi et al. l)
+  max_cells: 256           # dataset size cap
+  split_every: 40          # split hard cells every this many steps
+
+# Verification (unchanged from the CEGIS protocol, so rho is measured identically)
+verify:
+  rho_grid: [0.5, 1.0, 1.5, 2.0, 2.5]   # same grid as E5 / E4 for apples-to-apples
+  method: CROWN
+  min_width: 0.03
+  time_budget_s: 40
+  prop2:
+    beta_bisection: [0.0, 4.0]
+    iterations: 7
+    annulus_rho: 1.0       # measure beta on the rho=1.0 annulus, matching E3
+  audit:
+    reject_if_min_F_below: -1.0e-3
+
+seeds: [0, 1, 2, 3, 4]

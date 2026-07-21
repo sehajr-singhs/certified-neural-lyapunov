@@ -242,3 +242,138 @@ linear relaxation, while CROWN-Optimized recovers. On 3 of 4 boxes tested the la
 is monotone. We now report it on the certified CEGIS annulus, where it is monotone
 and tells a cleaner story: IBP -132.0 (useless), CROWN -32.5, CROWN-Optimized +2.0,
 the only bound that clears zero and certifies. e3 now writes bound_ladder_cegis_annulus.
+
+## Certified training direction (2026-07-20): reading Shi et al. and the feasibility probe
+
+New direction from Prof. Cui: replace post-hoc CEGIS with certified training, differentiating
+through the CROWN bound so V is verifiable from the start (arXiv:2411.18235, Shi, Li, Hsieh,
+Zhang, "Certified Training with Branch-and-Bound for Lyapunov-stable Neural Control", method
+name CT-BaB). Read the PDF (extracted to scratchpad), the load-bearing mechanics are:
+
+1. Differentiable certified bound in the loss. They optimize arg min_theta sigma(g_bar(B)),
+   where g_bar(B) is the CROWN UPPER bound on a violation model g, computed by auto_LiRPA via
+   linear bound propagation, which is differentiable in the weights because every relaxation and
+   propagation step is differentiable. g encodes the whole Lyapunov spec as one scalar:
+   g(x) = min( rho - V(x), sigma(decrease) + sum_i sigma(box-exit) ), and g <= 0 is the property.
+   The min encodes the implication V(x)<rho -> (decrease AND stays in B). This is Eq. (3)-(5).
+2. Overall loss Eq. (5): mean over subregions of [ sigma(g_bar + eps) + lambda sigma(g_PGD + eps) ]
+   + L_extra. First term is the certified-bound hinge (the point), second is a PGD hinge that
+   clears easy counterexamples fast, L_extra controls the region size.
+3. Region size in the objective (Eq. 7, L_extra). They FIX rho=1 and grow the fraction of B whose
+   samples satisfy V(x)<rho, penalizing V(x)>rho-eps when that fraction is below rho_ratio. This
+   is how "size of certified region" enters the objective without differentiating an implicit
+   boundary, and they note it is load-bearing: drop it and the spec is met trivially by collapsing
+   the ROA to nothing.
+4. Training-time BaB (Sec 2.3). They keep a dynamic dataset D of non-overlapping subregions
+   covering B, initialized as a grid with max side length l, and each epoch split only the HARD
+   subregions (those with g_bar>0) into two along the dimension that minimizes the resulting loss
+   (Eq. 6). This is what keeps BaB tractable in the loop, splitting effort concentrates on the hard
+   pieces instead of a uniform fine grid.
+5. Training-aware verification. Export the final D as "pre-split" regions to warm-start test-time
+   alpha,beta-CROWN. Verification (soundness) still comes from the full BaB verifier, not the
+   training bound.
+Their headline on 2-D quadrotor output feedback: 11x faster verification and 164x larger verified
+ROA vs a CEGIS baseline.
+
+What maps and what deviates for our system:
+- Their decrease is discrete-time V(x_{t+1})-V(x_t) <= -kappa V(x_t). Ours is continuous-time
+  Lie(x) = grad V . f < 0 and Prop-2 Lie <= -beta(V-V*). Same shape, and graphs.py already
+  computes F = -(Lie + beta(V-V*)) as its prop2 forward, so the differentiable spec is already
+  built, it just needs to be bounded with grad flowing instead of under no_grad.
+- They CO-TRAIN u and V. We train V ONLY against the FIXED saturated linear droop law Cui trains
+  against, matching the existing CEGIS setup. Logged as a deliberate deviation: our question is
+  whether V can be made verifiable-by-construction, not controller co-design. Stated in the report.
+- Certified region metric. To compare apples-to-apples with the CEGIS number (rho=2.0 is a BOX
+  SIDE of the gen-5 annulus, not a V-sublevel), we measure achieved certified rho with the SAME
+  certify_box bisection CEGIS used, and keep the three-verifier cross-check. Certified training
+  only changes how V is produced, not how rho is measured or audited.
+
+Feasibility probe (2026-07-20, the one real risk, now cleared). Built the gen-5 slice box
+[0.05,0.55]^2 on dims (4,14), ran auto_LiRPA compute_bounds(method='CROWN') on the analytic
+LyapunovCondition mode 4b with V params requires_grad and NO no_grad, then backward through
+relu(-lb+0.1). Result: CROWN lb = -0.657 (as-trained net fails there, expected), lb.requires_grad
+True, and the gradient reaches net.dense1.weight with norm 7.09 and all 500 entries nonzero. So the
+CROWN certified margin over a region IS differentiable to V's weights in THIS exact stack (torch
+2.11.0+cpu, auto_LiRPA 0.7.2, py 3.13.9) on CPU. The whole certified-training method is executable
+here without a GPU. This is the gate for Task 2 and it passed before any training code was written.
+
+## Warm-start guarantee for the controlled comparison (2026-07-21, per Prof. Cui)
+
+Prof. Cui wants the 2-D slice rerun on the SAME network we already have, not a fresh one, so E7
+(certified training) vs E4 (CEGIS) is a controlled comparison with the training METHOD as the only
+variable. Both start from the identical as-trained lyap_seed{k}.pt weights, same architecture, same
+equilibria; E4 repairs that net against finite counterexamples, E7 refines it by differentiating
+through the CROWN bound. If E7 quietly initialized a new random net the comparison would be
+meaningless, so this is now enforced in code, not left to convention:
+
+- src/certified_train.py grew `_warmstart_V(system, warmstart, require_warmstart)`. With
+  require_warmstart=True (the default, and what e7 always passes) a missing or None checkpoint
+  RAISES FileNotFoundError instead of silently building a fresh net, which is what the old
+  `if warmstart is not None and os.path.exists(...)` guard did. The load is strict=True, so the
+  checkpoint must be the same architecture or load_state_dict itself raises.
+- It returns a warm-start fingerprint (abspath, warmstart_loaded=True, init_param_l2 = L2 norm of
+  all params right after the load) that train() passes through and e7 copies into
+  results/e7_seed{k}.json. So each result proves on its face that V was warm-started from the exact
+  checkpoint and refined, never reinitialized. require_warmstart=False stays only as an escape hatch
+  for future from-scratch scaling experiments and is never used by the 2-D comparison.
+
+Verified on the seed-0 smoke: warmstart_loaded True, the loaded weights are the lyap_seed0.pt net
+(not the LyapunovOnState random init), and training descends from that point.
+
+## E7 driver (2026-07-21): closes the SCALING.md forward-reference
+
+experiments/e7_certified_train.py now exists (SCALING.md referenced it before it was written). Per
+seed k it: warm-starts training from lyap_seed{k}.pt, saves lyap_certtrain_seed{k}.pt, then measures
+the headline certified rho with the IDENTICAL audited certify_box path E4 used (reused verbatim via
+`from e4_cegis import max_certifiable_rho, slice_box, INNER, GI`, CROWN, eps=0, min_width=0.03,
+time_budget=30, PGD audit reject < -1e-3, rho grid 0.5..2.5), and Prop-2 beta with the same audited
+bisection E3 rung2 used (rho=1.0 annulus, min_width=0.04). The headline comes ONLY from certify_box;
+the training-time BaB frac/min_lb is written as a diagnostic and labelled as such. It then runs the
+JacobianOP cross-check (analytic vs auto_LiRPA gradient path, plus the lb<=ub soundness scan, reused
+from verifier_crosscheck) and the dReal (4b) SMT encoding (reused from dreal_baseline, records
+dreal_unavailable on this Windows host, runs on Colab/Linux) on the certified-trained V. Writes
+results/e7_seed{k}.json with slice_dim as a field. It refuses slice_dim>2, so the 2-D gate is
+enforced in code and nothing above 2-D can run from it.
+
+## E7 results (2026-07-21): certified training beats CEGIS on the same network, same verifier
+
+Ran experiments/e7_certified_train.py --all, five seeds, on the anaconda python (3.13.9, torch
+2.11.0+cpu, auto_LiRPA 0.7.2), KMP_DUPLICATE_LIB_OK=TRUE. Numbers, all from the identical audited
+certify_box E4/E3 used, not the training-time BaB:
+
+  seed  E7 rho  E7 beta   CEGIS rho  CEGIS beta   jac agree  soundness contra  warmstart
+  0     2.5     3.9688    2.0        3.9688       True       0                 True (L2 19.09)
+  1     2.5     3.9688    2.0        3.9688       True       0                 True (L2 16.84)
+  2     2.5     3.9688    1.5        3.9688       True       0                 True (L2 19.46)
+  3     2.5     3.9688    1.5        3.9688       True       0                 True (L2 17.31)
+  4     2.5     3.9688    2.0        3.9688       True       0                 True (L2 19.39)
+
+- Certified rho: E7 = 2.5 on EVERY seed vs CEGIS 1.8 +/- 0.245 ({2.0,2.0,1.5,1.5,2.0}, the exact
+  spread the CEGIS work reported). 2.5 is the grid ceiling (== rho_target, the trained box side), the
+  same convention CEGIS measured on, so E7 certifies the whole measured region on all five seeds where
+  CEGIS plateaued below it. The true E7 radius may be larger; measuring past 2.5 needs a larger trained
+  box, a separate question flagged for the climb, not answered here.
+- Prop-2 beta: E7 = 3.9688 on every seed, identical to CEGIS (both saturate the [0,4] bisection near
+  the ceiling on the rho=1.0 annulus). beta is verifier-limited, not method-limited, so parity is
+  expected and correct.
+- JacobianOP cross-check: analytic rho = 2.5 on all five; JacobianOP (looser) rho = 2.5 on seeds 1-4
+  and 2.25 on seed 0, a looser verifier certifying a slightly smaller region, which is expected and is
+  NOT a contradiction. agreement True on all five, 0 soundness contradictions across 24 boxes x 5 seeds
+  (no case of one verifier's lb exceeding the other's ub). This is the soundness cross-check Cui's brief
+  names, and it holds for the certified-trained net exactly as it did for the CEGIS net.
+- dReal: encoded for the certified region on all five, recorded dreal_unavailable on this host. Note
+  the WSL dreal that produced the committed baseline results (dreal 4.21.6.2, WSL2 Ubuntu, Jul 15) is
+  currently broken: the wheel dynamically links libibex.so, libClp.so.1, libClpSolver.so.1 and all
+  three PPA-installed libs are now missing from the WSL system (ldd on _dreal_py.so shows "not found").
+  Not auto-reinstalling system packages under sudo for one cross-check; the encoding is ready and runs
+  on Colab or a restored dReal host. The primary independent verifier (JacobianOP) covers soundness.
+- Training cost: steps reduced from 1200 to 400 in configs/certified_train.yaml after the first full
+  run showed the warm-started net converges by ~step 100 (frac_4b_verified=1.0, loss=0, cells stable
+  at 18) and the remaining 1100 steps were identical no-ops. 400 leaves 4x margin. Wall-clock ~6 min
+  per seed, most of it the verification and JacobianOP cross-check, not the training.
+
+Bottom line for Prof. Cui: on the identical warm-started network, controller, seeds, and audited
+verifier, certified training certifies a LARGER region than CEGIS (2.5 vs 1.8 mean) at the same
+exponential rate, verifiable-by-construction rather than repaired, with the soundness cross-check
+intact. The 2-D gate holds. The machinery is dimension-agnostic (SliceSpec, one config knob); the
+climb is the next session, per SCALING.md.

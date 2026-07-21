@@ -36,9 +36,12 @@ Untouched under `upstream/` (MIT, preserved with attribution):
 
 Ours:
 - `src/` PyTorch port of her dynamics, controllers, and Lyapunov net, plus the
-  verification graphs, verifier driver, PGD attack, and CEGIS loop
+  verification graphs, verifier driver, PGD attack, the CEGIS loop, and the
+  certified-training loop (`certified_train.py`, `slice.py`, the scaling seam)
 - `experiments/` E0 reproduce, E1 sampling gap, E2-E3 certification, E4 CEGIS,
-  E5 boundary
+  E5 boundary, E7 certified training (CT-BaB)
+- `configs/`, `SCALING.md` the certified-training config and the 2-D to N-D climb
+  checklist (the dimension is one config knob, no code change)
 - `paper/`, `index.html`, `colab/` the whitepaper, site, and Colab notebook
 
 ## Data provenance
@@ -64,6 +67,24 @@ attack and cross-checked against a second, JacobianOP-based verifier with zero
 soundness contradictions. The certified region collapses as the state dimension
 grows, reported not hidden.
 
+## Certified training, same network, same verifier
+
+CEGIS repairs the as-trained network against the finite counterexamples the
+verifier returns. Certified training (Shi, Li, Hsieh, Zhang, arXiv:2411.18235,
+CT-BaB) instead makes the CROWN certified margin over a whole region a
+differentiable term in the loss, so V is shaped to be verifiable while it trains.
+E7 warm-starts from the exact same `lyap_seed{k}.pt` weights CEGIS started from and
+refines them, never a fresh net, so the training method is the only variable. On
+the identical gen-5 slice, controller, five seeds, and audited verifier, it
+certifies (4b) out to rho = 2.5, the grid ceiling, on all five seeds, where CEGIS
+plateaued at 1.8 +/- 0.24 (2.0 on three, 1.5 on two), at the same Proposition-2
+rate beta = 3.97, with the JacobianOP cross-check agreeing and zero soundness
+contradictions. The headline rho and beta come out of the identical `certify_box`
+branch-and-bound the CEGIS result used, not the coarser training-time
+branch-and-bound, which is logged only as a diagnostic. Built to scale (the whole
+slice is a `SliceSpec`, the dimension is one config knob) but held at the 2-D gate;
+nothing above 2-D was run. See `SCALING.md`.
+
 ## Status
 
 - [x] Repo forked from her repo, structure laid out, her files preserved.
@@ -80,6 +101,12 @@ grows, reported not hidden.
       Algorithm 2 RNN controller reproduced and re-certified, dReal SMT baseline run
       on Linux (WSL): certifies both the 4-D gate (0.14s) and the gen-5 slice (0.45s),
       agreeing with CROWN, and flags the as-trained far-region violation.
+- [x] E7 certified training (CT-BaB, arXiv:2411.18235): warm-started from the exact
+      as-trained net and refined by differentiating through the CROWN bound.
+      Certifies the gen-5 slice (4b) to rho = 2.5 (grid ceiling) on all five seeds
+      vs CEGIS 1.8 +/- 0.24, Prop-2 beta = 3.97, measured by the identical audited
+      verifier, JacobianOP cross-check agrees with 0 contradictions. 2-D gate held,
+      built to scale (`src/slice.py`, `configs/certified_train.yaml`, `SCALING.md`).
 - [x] Whitepaper (`paper/main.pdf`), site (`index.html`), Colab (`colab/certify.ipynb`).
 
 Every number in the paper, the site, or this README traces to a per-seed JSON a
